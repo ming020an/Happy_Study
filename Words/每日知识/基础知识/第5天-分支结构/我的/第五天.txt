@@ -1,0 +1,22 @@
+scanf函数，整型‘&’符号不能少。
+
+switch分支语句
+	switch分支一般用来列举所有的可能性
+	如果在代码中需要“列举”一个对象的所有值时，我们一般选用switch
+语法：
+	switch(表达式)
+	{
+		case 常量表达式1:
+			语句1;
+			break;
+		case 常量表达式2:
+			语句2;
+			break; 
+		.....
+		case 常量表达式m:
+			语句m;
+			break;
+		default:   //其它
+			语句n;
+			break;
+	}
