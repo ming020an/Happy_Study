@@ -1,7 +1,7 @@
 /*
  * @Author: lgw
  * @Date: 2021-02-06 10:06:42
- * @LastEditTime: 2021-02-06 10:15:11
+ * @LastEditTime: 2021-02-07 14:45:26
  * @LastEditors: Do not edit
  * @FilePath: \test_0206\test_1.c
  * @Description: 
@@ -24,5 +24,5 @@ int main()
         
         // printf("last a = %d\n",a);
     }
-
+     return 0;   
 }
