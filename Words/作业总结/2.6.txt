@@ -1,0 +1,9 @@
+**问题**
+
+![img](file:///C:\Users\Administrator\AppData\Roaming\Tencent\Users\3158602522\QQ\WinTemp\RichOle\IMO7`L15A`OX5(O{I)2PUMQ.png) 
+
+<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\1612617829055.png" alt="1612617829055" style="zoom: 200%;" />
+
+编不出来，是否需要加unsinged  一个|还是||
+
+a|b+a 需要括号不
