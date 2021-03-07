@@ -10,7 +10,7 @@ int main ()
     }
     for (i=0;i<10;i++)
     {
-        printf("a[%d]=%d\n",i,a[1]);
+        printf("a[%d]=%d\n",i,a[i]);
     }
     return 0;
 }
