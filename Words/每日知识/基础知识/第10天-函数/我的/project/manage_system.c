@@ -1,7 +1,7 @@
 /*
  * @Author: lgw
  * @Date: 2021-03-07 19:56:49
- * @LastEditTime: 2021-03-07 20:54:47
+ * @LastEditTime: 2021-03-07 21:03:46
  * @LastEditors: Do not edit
  * @FilePath: \project\manage_system.c
  * @Description: 学生成绩管理系统，可以增删改查成绩 v1.0
@@ -11,7 +11,7 @@
 #include<string.h>
 #define N 100
 // 学生名字
-char stu_name[256][N];
+char stu_name[N][256];
 // 英文成绩
 int stu_en_score[N];
 // 语文成绩
@@ -57,14 +57,14 @@ int manage_sys()
         switch (key)
         {
         case 1:
-                insert_sore(num);
+                insert_score(num);
                 num++;
             break;
         case 2:
-            
+                del_score();
             break;
         case 3:
-                modify_sore();
+                modify_score();
             break;
         case 4:
              select_core();
@@ -80,7 +80,7 @@ int manage_sys()
     return 0;
 }
 
-void insert_sore(int index)
+void insert_score(int index)
 {
     printf("请输入学生名字!\n");
     scanf("%s",&stu_name[index]);
@@ -97,28 +97,29 @@ void insert_sore(int index)
     printf("输入成功！\n");
 }
 
-void del_sore()
+void del_score()
 {
     int index = 0;
     int i;
     printf("你决定删除第几条数据？");
     scanf("%d",&index);
 
-    for( i = num ;i>index;i--)
+    for( i = num ;i>index;index++)
     {
-        strcpy(stu_name[256][i-1],stu_name[256][i]);
-        stu_en_score[i-1] = stu_en_score[i];
+        strcpy(stu_name[index],stu_name[index+1]);
+        stu_en_score[index] = stu_en_score[index+1];
     }
 
 }
 
-void modify_sore()
+
+void modify_score()
 {
-    printf("你决定修改第几条数据？");
+    printf("你决定修改第几条数据？\n");
     int index = 0;
     scanf("%d",&index);
 
-    insert_sore(index);
+    insert_score(index);
 
 }
 
