@@ -9,9 +9,9 @@
 
 #include<stdio.h>
 #include<string.h>
-#define N 100
+#define N 100//define为
 // 学生名字
-char stu_name[256][N];
+char stu_name[256][N];//name有256行，每行N个char型的数
 // 英文成绩
 int stu_en_score[N];
 // 语文成绩
@@ -57,17 +57,17 @@ int manage_sys()
         switch (key)
         {
         case 1:
-                insert_sore(num);
+                insert_sore(num);//增加成绩
                 num++;
             break;
         case 2:
             
             break;
         case 3:
-                modify_sore();
+                modify_sore();//修改成绩
             break;
         case 4:
-             select_core();
+             select_core();//挑选成绩
              break;
         default:
             break;
@@ -80,7 +80,7 @@ int manage_sys()
     return 0;
 }
 
-void insert_sore(int index)
+void insert_sore(int index)//初始化，index查找字符串，放插入的数
 {
     printf("请输入学生名字!\n");
     scanf("%s",&stu_name[index]);
@@ -97,7 +97,7 @@ void insert_sore(int index)
     printf("输入成功！\n");
 }
 
-void del_sore()
+void del_sore()//删除
 {
     int index = 0;
     int i;
