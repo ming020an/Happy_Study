@@ -1,0 +1,460 @@
+0.问题引入
+	为了让机器帮我们解决某些问题,我们需要进行程序设计
+	对于现实中的我们关注的一些对象,需要转换成抽象的数据
+	这些抽象数据存储在计算机的内存中,并且通过各种数据类型
+	来规模化
+		基本类型:
+		构造类型:数组
+		指针类型:*
+		void类型:
+	以上的类型都是系统事先设置好的,用来存储某一类数据的
+	
+	int num = 10234125;
+	char name[50] = "ouyanghualiang";
+	int age = 99;
+	char addr[50] = "china,hunan,changsha";
+	int score = 59;
+	----->以上的数据分别描述了某个人的一些相关信息
+	有没有办法用一个变量来保存上面说有的数据呢??
+	既然系统给的数据类型实现不了我们的相fa
+	那可不可以自己定义一个新的数据类型呢??
+	
+	当然可以
+	---->构造类型其实是  构想/创建的类型
+	结构体:就允许用户自定义一个新的数据类型
+	共用体:
+	枚举:
+	
+1.结构体:是一种自己定义的构造类型
+	1.1定义格式
+		struct 结构体名
+		{
+			结构体成员类型1 结构体成员变量名1;
+			结构体成员类型2 结构体成员变量名2;
+			......
+			结构体成员类型n 结构体成员变量名n;
+		};
+		结构体的类型名: struct 结构体名
+	===>结构体名 和 结构体成员变量名 都是c语言的标识符,你懂了!!
+	比如说:
+		struct test
+		{
+			int num;
+			char name[50];
+		}; //定义了一个叫做  struct test的新数据类型
+		
+		定义变量: 数据类型 变量名;
+		struct test a; //a是一个结构体变量,数据类型是struct test型
+
+	比如说,要定义一个用来管理学生信息的结构
+		学号 姓名  性别 班级 地址 联系方式 ....
+		strcut student
+		{
+			int id;
+			char name[50];
+			char sex; //m/b男 w/g女
+			char class[20];
+			char addr[50];
+			long phonenum;
+		};
+		这个新的数据类型拥有六个成员变量
+			一个int  一个char数组   一个char  
+			一个char数组  一个char数组  一个long
+		定义一个学生变量要怎么定义呢?
+		struct student oyhl;
+
+    1.2结构体成员在内存中分布规律
+		strcut test
+		{
+			char a; //0x10
+			int b; //0x14
+		};
+		strcut test a;
+		(1)sizeof(a) == sizeof(struct test) == ?
+			(a)结构体所占内存就是所有成员所占内存之和
+				sizeof(a) == 5;
+			(b)"字节对齐"问题
+				cpu出于对效率优化的考虑,
+				在不同的编译器和cpu下,字节对齐方式有待争议
+				字节对齐要求在任何地址都是某个变量值的整数倍
+				4字节对齐要求任意变量的首地址都必须是4的倍数
+				如果不是4的倍数的地址,那么编译器可能会舍弃
+				
+				有些编译器要求4字节对齐,那么
+					sizeof(a) == 8
+					a _ _ _ b0 b1 b2 b3
+				有些编译器要求按变量的类型对齐
+					char型变量的地址必须是sizeof(char)倍数
+					short型变量的地址必须是sizeof(short)的倍数
+					int 型变量的地址必须是sizeof(int)的倍数
+					......
+					sizeof(a) == 8
+				
+				struct test1
+				{
+					char a;//0x10
+					char b;//0x11
+					int c;//0x14
+				};
+				struct test1 b;
+				sizeof(b) == 8
+				ab__c(4)
+				
+				struct test4
+				{
+					int y,m,d; //年月日
+				}
+				
+				struct test2
+				{
+					int c; //0x10
+					char a;//0x14
+					char b;//0x15
+					char d;
+					char e;
+					char f;
+					//struct test4 birth;//sizeof(birth) == 12
+				};//sizeof(struct test2) == 20
+				//c(4)ab__birth(12)
+				struct test2 c;
+				c(4)ab
+				sizeof(c) == 6
+		----->定义变量时先定义大的再定义小的		
+			
+		在x86内核的gcc编译器中,使用是按变量类型对齐的字节对齐方式
+			char型变量的地址必须是sizeof(char)倍数
+			short型变量的地址必须是sizeof(short)的倍数
+			int 型变量的地址必须是sizeof(int)的倍数
+			超过4字节的全部按4字节对齐
+				对齐包括起始地址和整体大小都必须是对应的倍数
+				
+		(2)结构体各成员的内存分布问题
+			以定义结构体的时候各个成员的位置,依次存放各个成员的数据
+			struct test
+			{
+				int b;
+				int a;
+			};
+			struct test t;
+			b___a___
+			
+	1.3结构体成员的引用
+		struct student
+		{
+			int id;
+			char name[50];
+			int score;
+		};
+		
+		访问结构体成员的方式,有三种
+		(1)结构体变量名.结构体成员变量名
+			struct student t;
+			t.id  t.name  t.score
+			.分支运算符,用来访问对象的成员
+			成员变量与普通变量一样(左值 右值)
+			t.id = 1024;
+			//t.name = "oyhl";//呵呵 自己想
+			//t.name[0] = 'o';
+			//t.name[1] = 'y';
+			//.....
+			strcpy(t.name,"oyhl");
+			t.score = 59;
+			int b = t.id; //t == 1024;
+			
+			strcut student * p = (strcut student *)malloc(sizeof(*p));
+						//=====>sizeof(struct student)
+		(2)(*p).id = 1024;
+			strcpy((*p).name,"wangbadan");
+			(*p).score = 12;
+			*地址:地址对应的那个变量
+		(3)->:访问对象指针的成员
+			p->id = 1025;
+			strcpy(p->name,"zhangsan");
+			p->score = 99;
+			
+		自己定义一个学生信息结构体,并从键盘获取一个学生的信息
+		存入结构体,并打印在屏幕上显示
+		
+		NAME
+		   time - get time in seconds
+
+		SYNOPSIS
+		   #include <time.h>
+				time用来获取系统的当前时间,以s的形式存入t指针中
+		   time_t time(time_t *t);
+				t:是一个 time_t类型的指针
+			time_t now;  &
+			time_t * now; malloc
+
+				localtime 用来将time获取的时间转换成本地时间
+		struct tm *localtime(const time_t *timep);
+				timep:指针,就是存放time获取到的那个时间
+			返回值,一个struct tm类型的指针,系统定义的结构体,
+				在头文件time.h中
+				
+				struct tm {
+				   int tm_sec;         /* 秒 0-59*/
+				   int tm_min;         /* 分 0-59*/
+				   int tm_hour;        /* 时 0-23*/
+				   int tm_mday;        /* 月的第几天 */
+				   int tm_mon;         /* 月份 0-11,一月是0*/
+				   int tm_year;        /* 年,相对与1900年的 */
+				   int tm_wday;        /* 星期几 0-6,星期天是0*/
+				   int tm_yday;        /* 一年的第几天 */
+				   int tm_isdst;       /* daylight saving time */
+			   };
+
+	
+	
+		
+		time_t now;
+		time(&now);//获取系统当前时间
+		strcut tm * t;
+		t = localtime(&now);//将系统时间转换成本地时间
+		2.自己实现 date 命令
+		
+		3.定义一个学生信息结构体,拥有至少5个学生信息(5个成员)
+			从键盘获取至少5个学生的信息
+			然后按照某个关键成员有序的将学生信息打印到屏幕
+			
+			比如:用score做关键成员
+				升序打印
+				降序打印
+		思路:
+			定义结构体
+			定义结构体变量数组
+			从键盘依次获取多个学生的信息
+			将学生信息按某个关键进行排序
+			将学生信息全部输出
+			
+			
+			int a[10];
+			a[0]
+			
+			struct student t[10];
+			t[0].id
+			
+	1.4 初始化:结构体的初始化用 {}进行	
+		在c语言中用{}进行初始化的有 构造类型(数组  结构体 共用体)
+		struct date
+		{
+			int y;
+			int m;
+			int d;
+		};
+		
+		struct student
+		{
+			int id;
+			char name[50];
+			struct date birth;
+			long tel;
+		};
+	 初始化:在定义的时候,赋予变量初始值	
+		(1).按定义结构体时成员的顺序,依次赋予各个成员初始值
+			struct student my = {
+						1,
+						"ouyanghualiang", 
+						{1900,3,5},
+						10086 
+				};
+				
+			struct student you = {
+						2,
+						"zhangsan"
+				};
+		(2).不按顺序,想初始化哪个就初始化哪个
+			.成员变量名 = 值;
+			struct student he = {
+					.tel = 13800138000,
+					.id = 3,
+					.name = "lisi"
+			};
+			
+		(3).结构体数组的初始化
+			整体数组初始化:整个数组成员都初始化,依次给数组每个元素赋值
+			struct student class[5] = {
+			{1,"ouyanghualiang",{1900,3,5},10086},
+			{2,""zhangsan"},
+			{.tel = 13800,.id=3,.name="lisi"} //给数组元素下标为[2]的赋值
+			}; //给数组赋值的{}
+			
+			部分初始化:通过数组下标来给部分元素赋值
+			[下标] = 值;
+			不提倡使用:不同编译器的条件和限制不同
+			
+			struct student class[5] = {
+				[2] = {1,"ouyanghualiang",{1900,3,5},10086},
+				[4] = {2,""zhangsan"}
+			}
+	
+	1.5 假设有结构体定义如下
+		struct test
+		{
+			int a;
+			int b;
+			struct test *next;
+		};
+		
+		struct test *p = (struct test*)malloc(sizeof(*p));
+		p->a = 6;
+		p->b = 10;
+		p->next = NULL;
+		
+		struct test *t = (struct test*)malloc(sizeof(*t));
+		t->a = 8;
+		t->b = 9;
+		t->next = p;
+		
+	  链表:数据结构课程安排的第一个内容
+		后面两天任务较轻,前面知识消化较好的同学可以先预习链表
+	
+		
+2.共用体(联合体): union
+	在定义的格式上与结构体一样
+	2.1共用体和结构体的最大区别
+		结构体在内存中的表现:结构体占用内存的大小 由所有成员决定
+							 成员越多,占用的内存越大
+		共用体在内存中的表现:所有成员共用一块内存空间,内存的大小
+							与最大的最大的成员一致
+							
+		共用体的特色是,所有成员的首地址相同
+		union test
+		{
+			char a;
+			int b;
+		}; //sizeof(union test) == 4
+		===>共用体定义格式如下
+		union 共用体名
+		{
+			成员类型1 成员名1;
+			成员类型2 成员名2;
+			.....
+		};
+		
+		共用体一般用于共用体成员不同时使用的情况
+		共用体的出现只是为了节省空间,并且使之适用于各种情况
+		
+	2.2共用体成员的访问方式,与结构体一样
+	union test t;
+	t.a = 'a';
+	t.b = 1024;
+	
+	int c = t.b;
+	char k = t.a;
+	
+	union test
+	{
+		int a;
+		char b;
+	};
+	union test t;
+	t.a = 0x11223344;
+	printf("%c\n",t.b);
+	大端:
+		低地址存放高字节数据
+	小端:
+		低地址存放低字节数据
+		
+	CPU的寄存器是按bit位来存放数据的
+	内存是按字节存放数据的
+	大端模式:内存的低地址存放寄存器的高字节
+	小端模式:内存的低地址存放寄存器的低字节
+	
+	如何测试自己的电脑是大端还是小端???
+	t.a = 0x12345678;
+	t.c --> 0x78  小端
+	t.c --> 0x12  大端
+	一般现在的电脑都是小端
+	
+	练习:
+		有一个变量  char a[4] = {'A','B','C','D'};
+			请问,能不能编写一个程序,将a用%d输出
+			int b = a[0] | a[1]<<8 | a[2]<<16 | a[3]<<24;
+			printf("%x\n",b); //将a转换成了int型的b 0x'D''C''B''A';
+			//b = 0x44<<24 | 0x43<<16 | 0x42<<8 | 0x41<<0;
+	union num
+	{
+		int b;
+		char a[4];
+	};
+	
+	union num t;
+	t.a[0] = 'A';
+	t.a[1] = 'B';
+    t.a[2] = 'C';
+    t.a[3] = 'D';
+	printf("%d\n",t.b);	
+			
+
+3.枚举: enum
+	把该类型的所有可能全部通过成员变量列举出来
+	有些时候,变量的取值范围是有限的
+	比如 星期
+	enum weekday
+	{
+		MON = 1024,
+		TUE,
+		WED,
+		THU,
+		FRI,
+		SAT,
+		SUN
+	};
+	
+	enum weekday w;
+	w = WED;
+	问: w == 1026;
+	
+
+	
+	枚举的实现跟 字符常量 一样, SUN  SAT THU .... 这些是给人看的(字面意思)
+			机器会自动将这些识别成 后面赋值的 正整数
+
+
+			
+4.重定义数据类型
+	将一个已有的数据类型重命名
+	GNU C:
+		unsigned/signed:int  short  char 
+	
+	
+	C51 C:
+		u8
+		uint8
+		int8
+		....
+		
+	如果将一个c51的程序,用gcc去编译,那么有些数据类型是不能被识别的
+	
+	此时我们可以利用typedef来重新定义一个新的类型名,以匹配它
+	
+	typedef的使用格式如下:
+	typedef 现有的类型名  新类型名
+	
+	比如说:
+		typedef unsigned char  u8;
+	
+
+
+
+
+
+定义结构
+	struct 结构体名      ---------->新数据类型
+	{
+		各个成员类型  各个成员变量名;
+	};
+	
+使用结构体
+	struct 结构体名   变量名;    //定义结构体变量    数据类型 变量名;
+	struct 结构体名 * 变量名;	 //定义结构体指针	 指向类型* 指针名;
+	struct 结构体名 数组名[数组容量] //定义结构体数组 元素类型 数组名[数组容量];
+	
+访问结构体成员
+	结构体变量: .
+		结构体变量名.成员名
+	结构体指针: ->
+		结构体指针名->成员名
+		
+		

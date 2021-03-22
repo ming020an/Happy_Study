@@ -45,7 +45,6 @@ void init_sys()
     memset(stu_ma_score,0,N);
 
 }
-
 int manage_sys()
 {
     int key = 0;
@@ -58,7 +57,6 @@ int manage_sys()
         {
         case 1:
                 insert_sore(num);//增加成绩
-                num++;
             break;
         case 2:
                 del_score();
@@ -70,6 +68,7 @@ int manage_sys()
              select_core();//挑选成绩
              break;
         default:
+            return -1;
             break;
         }
 
@@ -133,8 +132,8 @@ void select_core()
         printf("|%d\t |%s\t | %d\t | %d\t | %d\t \n",i,stu_name[i],stu_en_score[i],stu_ch_score[i],stu_ma_score[i]);
 
     }
-}
 
+}
 int main()
 {
     head_print();
