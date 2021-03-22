@@ -11,11 +11,7 @@
 #include<string.h>
 #define N 100//define为
 // 学生名字
-<<<<<<< HEAD
 char stu_name[256][N];//name有256行，每行N个char型的数
-=======
-char stu_name[N][256];
->>>>>>> b21b9435ad0d020e1c26a67ecc6bea5ad41d5447
 // 英文成绩
 int stu_en_score[N];
 // 语文成绩
@@ -61,22 +57,14 @@ int manage_sys()
         switch (key)
         {
         case 1:
-<<<<<<< HEAD
                 insert_sore(num);//增加成绩
-=======
-                insert_score(num);
->>>>>>> b21b9435ad0d020e1c26a67ecc6bea5ad41d5447
                 num++;
             break;
         case 2:
                 del_score();
             break;
         case 3:
-<<<<<<< HEAD
                 modify_sore();//修改成绩
-=======
-                modify_score();
->>>>>>> b21b9435ad0d020e1c26a67ecc6bea5ad41d5447
             break;
         case 4:
              select_core();//挑选成绩
@@ -92,11 +80,7 @@ int manage_sys()
     return 0;
 }
 
-<<<<<<< HEAD
 void insert_sore(int index)//初始化，index查找字符串，放插入的数
-=======
-void insert_score(int index)
->>>>>>> b21b9435ad0d020e1c26a67ecc6bea5ad41d5447
 {
     printf("请输入学生名字!\n");
     scanf("%s",&stu_name[index]);
@@ -113,11 +97,7 @@ void insert_score(int index)
     printf("输入成功！\n");
 }
 
-<<<<<<< HEAD
 void del_sore()//删除
-=======
-void del_score()
->>>>>>> b21b9435ad0d020e1c26a67ecc6bea5ad41d5447
 {
     int index = 0;
     int i;
