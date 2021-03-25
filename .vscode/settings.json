@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "ostream": "c",
+        "stdio.h": "c",
+        "windows.h": "c",
+        "random": "c"
+    }
+}
