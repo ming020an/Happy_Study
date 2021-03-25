@@ -1,0 +1,41 @@
+1. 假设下面这个程序编译后名字是main, 请问这个程序执行后，系统总共会出现过多少个main进程 ?
+
+	int main(int argc, char *argv[])
+	{
+		fork();
+		fork() && fork() || fork();
+		fork();
+	}
+
+2. 请问下面这个程序执行后的输出结果是 ？
+
+	#include<stdio.h>
+	#include<sys/types.h>
+	#include<unistd.h>
+
+	int main(void)
+	{
+		int i;
+    		for(i=0;i<2;i++)
+  		{
+        		fork();
+     			printf("_\n");
+    		}
+    		return 0;
+	}
+3. 请问下面这个程序执行后的输出结果是 ？
+
+	#include<stdio.h>
+	#include<sys/types.h>
+	#include<unistd.h>
+
+	int main(void)
+	{
+		int i;
+    		for(i=0;i<2;i++)
+  		{
+        		fork();
+     			printf("_");
+    		}
+    		return 0;
+	}

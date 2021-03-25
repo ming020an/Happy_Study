@@ -1,0 +1,356 @@
+1.程序
+.c
+程序=数据结构+算法
+数据：用来表示人们思维对象的抽象概念的物理表现叫做数据。
+指令：操作，数据处理的规则
+就是数据和指令的集合，一个程序的执行过程就是一个计算。
+
+做饭、烧菜
+同时进行
+大脑是CPU
+大脑可以思考处理很多事情，
+
+输入数据--处理数据--输出数据
+处理数据可以同时处理多个！！
+并发！
+
+linux:ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 11:35 ?        00:00:01 /sbin/init
+root         2     0  0 11:35 ?        00:00:00 [kthreadd]
+root         3     2  0 11:35 ?        00:00:00 [ksoftirqd/0]
+root         4     2  0 11:35 ?        00:00:00 [kworker/0:0]
+root         5     2  0 11:35 ?        00:00:00 [kworker/0:0H]
+root         7     2  0 11:35 ?        00:00:00 [rcu_sched]
+root         8     2  0 11:35 ?        00:00:00 [rcu_bh]
+root         9     2  0 11:35 ?        00:00:00 [migration/0]
+
+
+
+顺序执行：CPU利用率太低了
+并发执行：目的就是提高CPU利用率。
+怎么做？“进程：执行的程序”
+
+2.进程有什么法宝？
+进程的基本结构：指令（T）+数据+系统块的信息
+pid：进程编号
+数据块
+指令块
+
+进程是一个独立的活动单元
+竞争系统资源的基本单位
+
+一个程序可能会对应多个进程，
+每个进程只对应一个程序。
+
+
+进程的状态
+1：就绪态 队列（先进先出））等CPU 
+等到CPU，进入2态（进程调度算法）
+2.执行态（运行态）A:cpu的时间片到了 转而去就绪态 B:I/O 请求转而去等待态
+3.等待态 当I/O 请求满足，进入就绪态
+
+nm ./a.out 看不到局部变量
+发现一个情况数据、代码存在内存中在不同区间 
+代码：T
+数据：D B
+
+讨论一下这个问题：
+linux进程地址空间布局？
+不同的数据，存储在不同的“内存段”中。不同的“内存段”属性及管理方法不一样。
+
+从低地址向高地址依次
+1.text：主要存放代码，只读共享 运行期间，不会释放。080483ed T add
+2.data：数据区主要存放已经初始化的全局变量和static变量。可读可写 运行期间，不会释放。0804a01c D bbb
+3.bss：数据区主要存放没有初始化的全局变量和static变量。可读可写，一般情况下是0. 运行期间，不会释放。 0804a034 B aaa
+4.rodata:只读数据段。（字符串常量）运行期间，不会释放。
+5.堆 heap：主要存malloc/realloc动态分配的空间。可读可写，手动申请手动释放。数据从低到高存放。
+6.栈 stack：主要存放局部变量，可读可写，自动分配，自动释放。数据从高到低存放。先进后出。
+
+linux下进程相关的API函数解析
+1.fork :创建一个新进程（子进程）
+NAME
+       fork - create a child process
+
+SYNOPSIS
+       #include <unistd.h>
+
+       pid_t fork(void);
+	 
+	  duplicating the calling process:
+	  孩子进程复制克隆了父进程的数据和指令；创建之后，孩子进程独立。
+	  一次创建调用，两次返回,一次是父进程返回，一次是子进程返回，并且返回值不一样,返回先后系统决定。
+	  fork（）返回值如下：
+	  -1：创建失败
+	  PID>0： 孩子进程的PID（父进程返回发声）
+	  PID=0： 子进程返回发声 0
+
+	  
+	  作业：
+	  比较两段代码的区别：
+	  （1）
+	pid_t pid;
+	printf("YI JIAN DA SHI YAO CHU FA SHENG \n");
+	pid=fork();//创建孩子进程
+	if (pid==-1)//创建失败
+	{
+		perror("fork() error");
+		return -1;
+	}
+	if(pid>0)
+	{
+		sleep(2);
+		printf("I AM BABA, MY SON IS %d\n",pid);	
+	}
+	if(pid==0)
+	{
+		printf("I AM SON, HAHA %d\n",pid);	
+	}
+	（2）
+	  更改为：printf("YI JIAN DA SHI YAO CHU FA SHENG");
+
+2.getpid/getppid
+NAME
+       getpid, getppid - get process identification
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <unistd.h>
+
+       pid_t getpid(void);
+       pid_t getppid(void);
+	  
+	 getpid:获得自己的进程号 
+	 getppid：获得父进程的进程号
+	 说明：如果父进程先死掉，那么子进程就会变为孤儿进程，有进程组的老大代养.
+	 说明：fork成功创建了进程，复制了共有的东西，一旦fork成功后进程间是独立的，互不影响
+	 
+
+	
+	
+3. 进程退出：
+		进程退出有两种情况:
+		一是自我结束（正常/异常）
+			(1) main函数执行完了
+				main退出，表明整个进程执行完毕！！！
+				
+			(2) 在进程执行的任意时刻调用
+				exit()//善后了，清理缓冲区，数据输出在标准的输出设备上。
+				
+				/_exit()//说走就走,没有清理缓冲区，数据不会输出在标准的输出设备上。				
+				
+					#include <stdlib.h>
+					void exit(int status);
+						status:表示退出码，表示退出状态。
+						正常退出，做一些清理工作(把缓冲区的东西，同步到文件中去啦)
+						
+						
+					#include <unistd.h>
+					void _exit(int status);
+						status:表示退出码，表示退出状态。
+						___做火箭走的，中止进程，来不及做清理工作啦
+						
+				status:0表示正常退出，非0异常退出，数值程序员可以自己定义。
+				常用 -1、0、1
+									
+						
+					练习:
+					1. 
+						int main()
+						{
+							printf("hello world");
+							
+							_exit(-3);
+						}
+						
+						
+						int main()
+						{
+							printf("hello world");
+							exit(-3);
+						}
+						
+						
+						
+		二是他杀
+			被操作系统干掉啦
+	
+	
+	
+	(3) 等待子进程退出
+		
+		NAME
+		   wait, waitpid, waitid - wait for process to change state
+
+	SYNOPSIS
+		   #include <sys/types.h>
+		   #include <sys/wait.h>
+
+		   pid_t wait(int *status);
+
+		   pid_t waitpid(pid_t pid, int *status, int options);
+		   
+		   这两个函数用来等待某个(些)子进程的状态发生改变的，等待的状态改变有三种情况：
+			(1) 子进程退出(正常退出): main函数返回/exit/_exit
+			(2) 子进程被信号中止 
+			//(3) 子进程被信号唤醒
+
+		在子进程正常退出(1)的情况，调用wait可以释放子进程的资源，假如
+		没调用wait,那么子进程退出后，就会变成僵尸进程(zombie)
+		僵尸进程(zombie)：子进程退出后，他的资源谁来收拾？父进程收拾，父进程先退出，系统收拾。
+		
+		假如一个子进程的状态已经发生改变，那么调用wait/waitpid就会立即返回。
+		否则会阻塞调用进程直到某个子进程状态发生改变或被信号中断。
+	
+			wait用来等待任意一个子进程退出。
+			pid_t wait(int *status);
+				status: int型，用来保存子进程的退出信息的(怎么死的，退出码等等)
+				返回值:
+					成功返回退出的那个子进程的进程id
+					失败返回-1,同时errno被设置。
+			
+				status用来保存退出的子进程的状态信息的，状态信息保存在一个整数（程序员定义各种情况）中，
+				我们可以用下面的这些宏来解析它的信息:
+					WIFEXITED(status)
+							return true 假如该子进程是正常退出的(main返回/exit/_exit)
+					WEXITSTATUS(status)
+							返回子进程的退出码，只有在子进程正常
+							退出(WIFEXITED(status) == true)时，这个宏才有意义
+							
+							把 进程的退出码   unsigned char 来看待！！！！
+			
+
+					WIFSIGNALED(status)
+							return true 假如子进程是被信号干掉的
+					
+						……
+
+			pid_t waitpid(pid_t pid, int *status, int options);
+					pid: 指定要等待的进程或进程组
+						pid == -1, 表示等待任意子进程
+						pid == 0, 表示等待与调用进程同组的任意子进程
+						
+							"进程组":
+								就是一组进程！！！每个进程就会属于某一个进程组，
+								并且每个进程组，都有一个组长，进程组有一个组id,
+								这个组id,就是组长进程的id.
+						pid < -1 表示等待组id 等于 pid绝对值的那个组的任意子进程
+						
+						pid > 0 表示等待指定的子进程(其进程号为pid)
+					status:	同wait一样
+					
+					options:	选项
+							0: 表示阻塞等待
+							WNOHANG: 非阻塞，假如没有子进程退出，则立即返回。
+							
+					返回值:
+					成功返回退出的那个子进程的进程id
+					失败返回-1,同时errno被设置。
+					
+			
+			
+		(4) exec函数族
+			
+			exec函数族是让进程去执行另外一个程序文件。
+			就是让另外一个程序文件的数据和指令，覆盖当前进程的数据和指令段！！！！
+			//偷梁换柱！
+			
+			
+			
+			exec就是让一个进程去执行另外一个程序(这个意思是说，我要执行MP3的播放程序，我通过创建一个子进程就可以了！！！)，那么：
+				你是不是要指定这个程序文件的名字？ 一个在文件系统中的程序的文件名(带路径)
+				你可能还得指定程序运行的参数！！！
+					在linux程序的参数，都是字符串！！！
+					指定程序的参数有两种方式:
+					注意：大家掌握l v p三个参数就好
+						l: list
+							把程序运行的参数，一个一个地列举出来.程序运行的第一个参数就是程序的名字(不带路径的)
+								"sum_zl"  "123" "456" NULL
+						v: vector 向量，数组
+							 把程序运行的参数，弄成一个char*的数组
+							char* argv[] ={"sum_zl",  "123", "456" ,NULL} ;
+			NAME
+		   execl, execlp, execle, execv, execvp, execvpe - execute a file
+
+	SYNOPSIS
+		   #include <unistd.h>
+
+		   extern char **environ;
+
+				
+		   int execl(const char *path, const char *arg, ...);
+					path: 指定要执行的那个程序文件的文件名(一般要带路径),
+					第二个参数开始，就是执行该程序所带的参数(要包含程序名，且是第一个参数)，
+					以NULL结尾
+				
+				返回值:
+					失败返回-1, 同时errno被设置。
+					成功，就永远不会返回啦!!!!!因为你的整个指令和数据段，都被人家替换掉啦，
+					还怎么返回呢?哥！！！
+				如:
+					exec("/home/gec", "sum_zl", "123", "456", NULL);
+					
+		   
+				v: vector
+					用向量/数组的方式指定要执行的程序的参数
+		   int execv(const char *path, char *const argv[]);
+				path: 指定要执行的那个程序文件的文件名(一般要带路径),
+				argv:就是执行该程序所带的参数(要包含程序名，且是第一个参数)，
+					以NULL结尾
+		   
+		   系统中有一个环境变量  PATH
+		   环境变量是什么东西？ 就是整个系统环境(所有进程都共享)里面的变量。
+		   有一个环境变量叫 PATH = dir1:dir2:dir3...:dirN
+			指定的就是程序文件的搜索路径，意思是当您运行一个程序时，
+			不指定程序的路径时，系统就会到dir1这个目录直去找这个文件，
+			如果没有找到，就到dir2这个目录里面去找，如果没有找到，就会到
+			dir3里面去找，直到找到它，或全部都没有找到，就报错！！
+		   
+		   
+			如果您要运行的那个程序文件本身就在标准的搜索路径下，就无须指定路径啦。
+			
+			exec带p的版本，就是这个意思，
+				p : path
+		int execlp(const char *file, const char *arg, ...);
+				file:您要执行的那个程序文件名(不需要带路径，因为它已经在标准的搜索路径下面啦, p)
+				其他的参数，为运行这个程序的参数  list
+		       
+				v 
+				p
+					同理！！
+		   int execvp(const char *file, char *const argv[]);
+		  
+
+			
+			
+		(5)
+			NAME
+       system - execute a shell command
+
+		SYNOPSIS
+			   #include <stdlib.h>
+
+				system用来执行command指定的命令或程序
+			   int system(const char *command);
+			   
+				如:
+				
+				system("madplay -Q xxx.mp3");
+
+				or
+				
+				char cmd[256];
+				sprintf(cmd, "madplay -Q  %s", p->mp3name);
+				system(cmd);
+			
+				DESCRIPTION
+			   system() executes a command specified in command by calling /bin/sh -c command, and returns
+			   after the command has been completed.  During execution of the  command,  SIGCHLD  will  be
+			   blocked, and SIGINT and SIGQUIT will be ignored.
+
+
+			
+			
+			
+			
+			

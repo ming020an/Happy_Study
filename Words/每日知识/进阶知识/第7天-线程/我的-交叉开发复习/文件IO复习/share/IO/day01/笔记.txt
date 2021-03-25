@@ -1,0 +1,214 @@
+测试
+	将"hello world"写入1.txt 
+	读取1.txt内容之后写入2.txt
+	
+操作步骤
+	1、打开1.txt 
+	2、写入1.txt 
+	3、关闭1.txt
+	4、打开2.txt 
+	5、读取1.txt 
+	2、写入2.txt 
+	6、关闭2.txt 	
+
+	char buf[] = "hello word!";
+	strlen(buf)   sizeof(buf)
+	11              12
+	
+	char *buf = "hello word!";
+	strlen(buf)   sizeof(buf)
+	11				4
+	
+=============================Linux IO=====================
+系统IO       --->2
+	open 
+	read
+	write
+	close
+	lseek
+	ioctl
+	...
+
+
+标准IO      --->3    
+	fopen 
+	fread
+	fwrite
+	fclose
+	fseek
+	feof	--->判断是否到达文件尾部
+	ferror  --->判断文件是否出现某种错误
+	
+	
+全缓冲   ---》缓冲区溢出或者fflush
+行缓冲   ---》遇到换行符 
+不缓冲
+
+499
+size_t fread(void *ptr,100,5, FILE *stream)
+size_t fwrite(const void *ptr, 100, 5,FILE *stream);
+
+
+QQ :2130177916 
+
+================================标准IO相关函数
+1)fopen函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		FILE *fopen(const char *path, const char *mode);
+	参数
+		path	---》你要打开的文件对应的路径名
+		mode	--->你要打开的模式，有以下选择
+					r  		--->只读,文件一定要存在
+					r+  	--->可读可写,文件一定要存在
+					w       --->只写,文件没有就创建
+					w+      --->可读可写,文件没有就创建
+					a		--->追加写入,文件没有就创建
+					a+      --->可读，追加写入,文件没有就创建		
+	返回值
+		成功		---》文件指针
+		失败		---》NULL
+	功能
+		打开文件
+		
+2)fclose函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		int fclose(FILE *fp);
+	参数
+		fp	---》你要关闭的文件,fopen的返回值		
+	返回值
+		成功		---》0
+		失败		---》EOF
+	功能
+		关闭文件
+		
+3)fread函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+	参数
+		ptr		--->你读取到的数据保存的缓冲区
+		size 	--->数据块的大小
+		nmemb   --->数据块个数
+		stream  --->文件指针,你要读取的对象,fopen的返回值
+	返回值
+		成功		---》读取的数据块个数,等于nmemb
+		失败		---》读取的数据块个数,小于nmemb或者等于0
+	功能
+		读取文件
+	注意！！！
+		读取失败有可能是已经到达文件尾部或者遇到某种错误
+		可以使用feof和ferror进行检测
+		
+4)fwrite函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		 size_t fwrite(const void *ptr, size_t size, size_t nmemb,FILE *stream);
+	参数
+		ptr		--->你要写入的数据所在的缓冲区
+		size 	--->数据块的大小
+		nmemb   --->数据块个数
+		stream  --->文件指针,你要写入的对象,fopen的返回值
+	返回值
+		成功		---》写入的数据块个数,等于nmemb
+		失败		---》写入的数据块个数,小于nmemb或者等于0
+	功能
+		写入文件
+		
+5)fseek函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		int fseek(FILE *stream, long offset, int whence);
+	参数
+		stream  --->文件指针,你要操作的对象,fopen的返回值
+		offset	--->你要偏移的长度
+		whence	--->你要从哪里开始偏移,有以下选择 
+						SEEK_SET  --->文件起始位置
+						SEEK_CUR  --->当前位置
+						SEEK_END  --->文件末尾
+	返回值
+		成功		---》0
+		失败		---》-1
+	功能
+		实现对文件的偏移
+
+6)ftell函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		long ftell(FILE *stream);
+	参数
+		stream  --->文件指针,你要操作的对象,fopen的返回值
+	返回值
+		成功		---》当前偏移长度
+		失败		---》-1
+	功能
+		获取文件当前偏移量	
+		
+7)rewind
+	头文件
+		#include <stdio.h>
+	函数原型
+		 void rewind(FILE *stream);
+	参数
+		stream  --->文件指针,你要操作的对象,fopen的返回值
+	返回值
+		无
+	功能
+		将文件偏移量设置在文件开始位置
+		fseek(stream, 0, SEEK_SET);
+		
+8)feof函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		int feof(FILE *stream);
+	参数
+		stream  --->文件指针,你要操作的对象,fopen的返回值
+	返回值
+		到达文件尾部  		---》真 1
+		没有到达文件尾部  	---》假 0
+	功能
+		判断是否到达文件尾部
+
+9)ferror函数
+	头文件
+		#include <stdio.h>
+	函数原型
+		int feof(FILE *stream);
+	参数
+		stream  --->文件指针,你要操作的对象,fopen的返回值
+	返回值
+		遇到某种错误  		---》真
+		没有遇到某种错误  	---》假
+	功能
+		判断是否遇到某种错误
+
+作业
+	在1.txt中写入47字符
+	之后使用标准IO读取1.txt内容 (2个数据块,每块5字节)
+	之后使用标准IO写入2.txt内容 (2个数据块,每块5字节)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

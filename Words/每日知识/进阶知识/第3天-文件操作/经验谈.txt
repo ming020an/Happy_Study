@@ -1,0 +1,55 @@
+文件IO需要对缓冲区进行操作
+需要注意很多地方：
+1、在对文件进行读写操作的时候，先应该刷新缓冲区。
+使用	
+printf("\n"); 		利用\n性质进行刷新
+bzero(缓冲区，大小);	对数组清零操作
+int fflush(FILE *stream)  函数功能就是 刷新缓冲区
+
+
+标准IO块读写操作，很容易导致最后一块的内容会读不到或者会多读一些不需要的东西
+为此代码优化示例如下：
+
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+size_t fwrite(const void *ptr, size_t size, size_t nmemb,FILE *stream);
+
+void *ptr    		你需要把内存需要存进哪个缓冲区
+
+size_t size   		每次你需要读多少	
+
+size_t nmemb		分几个数据块     总共内容 = size * nmemb 
+
+FILE *stream   		你想对哪个文件进行操作 
+
+返回值
+如果成功就返回 真实读到的字符个数 数据块
+如果读到文件末尾或者出错就返回 0
+
+思路就是把数据块设置多点，每次读设置为1
+这样在最后一次读的时候肯定能读到文件末尾。这样就可以进行判断
+
+if((ret = fread(buf,1,1000,fp))>0)		//1，client读取文件，读1000个字节到buf 
+		{
+			send(fd,buf,1000,0);		//发送东西
+		}
+		else
+		{										
+			send(fd,buf,ret,0);					//2，client 把buf里面的东西发送给server						 
+			if(feof(fp)!=0)						//3，如果小于1000字节 发送 剩余其他内容
+			{
+				send(fd,end_buf,10,0);		
+				break;
+			}
+			if(buf[0]==NULL)
+			{
+				perror("read erro \n");
+			}
+		}
+
+
+
+
+
+
+	

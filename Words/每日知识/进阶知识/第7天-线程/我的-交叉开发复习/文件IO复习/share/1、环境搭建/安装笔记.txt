@@ -1,0 +1,44 @@
+一、准备工具
+	1)VMware10		--->虚拟机，用于模拟真实的电脑硬件
+	2)Ubuntu12.04	--->linux操作系统
+	3)SecureCRT		--->串口输出工具
+	4)Notepad++		--->文本编辑工具
+	
+二、工具安装
+	1、VMware10
+		1)解压VMware10.rar这个压缩包
+		2)双击vmware_workstation10.exe
+		3)一直下一步，选择典型(typical)安装
+		4)验证码在sn.txt文件中
+		
+		
+		5)解压ubuntu(12.04标准教学系统),记住这个的路径
+		6)双击打开vmware workstation
+		7)点击打开虚拟机或者(点击文件->打开)，找到ubuntu12.04中的Ubuntu-12.04.vmx
+		8)点击绿色三角符号开启此虚拟机
+		
+		9)选择www.yueqian.com.cn这个用户,密码是123456    --->可查看pic下的ubuntu开机用户选择.png
+		不要选择Guest Session(游客用户)这个用户
+		注意:进入到这个界面之后小键盘会被锁起来,但是可以使用字母上面的数字按键输入密码,
+		要想使用小键盘输入密码,只能按下num lk这个按键解锁之后使用
+		密码正确之后就进入我们想要的界面了
+
+	2、SecureCRT
+		1)解压SecureCRT.rar这个压缩包
+		2)双击SecureCRT.exe
+		3)看pic下的SecureCRT配置步骤.png
+		4)之后开启开发板电源,等待启动结束即可
+	
+	3、Notepad++
+		1)双击npp.7.3.3.Installer.exe,一直点击下一步即可,默认安装在C盘
+		2)双击notepad++打开
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

@@ -1,0 +1,378 @@
+
+参考代码
+1、头文件
+#define DATA_PATH  "./stu.dat"
+#define NEW_PATH   "./new.dat"
+#define MAXSIZE 100
+#include<windows.h>
+struct student
+{
+    int id;
+    char name[10];
+    int chinese;
+    int math;
+    int english;
+    int all;
+};
+extern void CreateInfo();//录入学生信息
+extern void ShowInfo();//显示信息
+extern int get_num();//获取学生人数
+extern void search();//查找学生信息
+extern void modInfo();//修改学生信息
+extern void deleteInfo();//删除学生信息
+extern void sort();//排序
+extern void show();//界面展示
+
+2、初始界面显示
+#include <stdio.h>
+
+void show()
+{
+printf("*******************************************************************************\n");
+printf("\n");
+printf("\n");
+printf("                       欢迎使用学生信息管理系统^_^                             \n");
+printf("\n");
+printf("\n");
+printf("*******************************************************************************\n");
+printf("\n");
+printf("\n");
+printf("                        请根据需要选择使用的功能                               \n");
+printf("\n");
+printf("                            1、录入学生信息                                    \n");
+printf("\n");
+printf("                            2、查询学生信息                                    \n");
+printf("\n");
+printf("                            3、修改学生信息                                    \n");
+printf("\n");
+printf("                            4、删除学生信息                                    \n");
+printf("\n");
+printf("                            5、按排名查看学生信息                              \n");
+printf("\n");
+printf("                            6、退出系统                                        \n");
+}
+
+
+3、主函数
+#include <stdio.h>
+#include "student.h"
+/*******1 创建或增加人员信息******/
+void CreateInfo()
+{
+    int len;
+    printf("请输入录入学生的总人数");
+    scanf("%d",&len);
+    FILE* fp=fopen(DATA_PATH,"rb+");
+    if(NULL==fp)
+    {
+        fp=fopen(DATA_PATH,"wb");
+    }
+    fseek(fp,0,SEEK_END);
+    struct student s;
+    printf("请输入学生信息\n");
+    printf(" 学号 姓名 语文 数学 英语\n");
+    register int i=0;
+    while(i<len)
+    {
+        scanf("%d%s%d%d%d",&s.id,s.name,&s.chinese,&s.math,&s.english);
+        s.all=s.chinese+s.math+s.english;
+        fwrite(&s,sizeof(struct student),1,fp);
+        i++;
+        printf("录入1次信息成功\n");
+
+    }
+    printf("录入信息成功\n");
+    fclose(fp);
+
+}
+/**********2 显示所有人员信息*************/
+void ShowInfo()
+{
+    struct student s;
+    FILE* fp=fopen(DATA_PATH,"rb");
+    if(NULL==fp)
+    {
+        printf("没有学生信息\n");
+        return;
+    }
+    printf("学号 姓名     语文 数学 英语 总分\n");
+    while(fread(&s,sizeof(s),1,fp)==1)
+    {
+        printf("%-5d%-10s%-4d%-5d%-5d%-4d\n",s.id,s.name,s.chinese,s.math,s.english,s.all);
+    }
+    fclose(fp);
+}
+/*********** 3 获取学生人数**********/
+int get_num()
+{
+    int n=0;
+    struct student s;
+    FILE* fp=fopen(DATA_PATH,"rb");
+    if(fp==NULL)
+    {
+        printf("无法打开文件");
+        return 0;
+    }
+    while(fread(&s,sizeof(s),1,fp)==1)
+    {
+        n++;
+    }
+    return n;
+
+}
+/***********4 查找人员信息***********/
+void search()
+{
+    int i,j=0;
+    i=get_num();
+    printf("请输入查询学生的学号");
+    int id;
+    scanf("%d",&id);
+    struct student s;
+    FILE* fp=fopen(DATA_PATH,"rb");
+    if(fp==NULL)
+        return;
+    while(fread(&s,sizeof(s),1,fp)==1)
+    {
+            if(id==s.id)
+            {
+                printf("%-5d%-10s%-4d%-4d%-4d\n",s.id,s.name,s.chinese,s.math,s.english);
+                break;
+            }
+            j++;
+    }
+    if(j==i)
+        printf("没有该学生的信息\n");
+    fclose(fp);
+
+}
+/**********5 修改学生信息*******/
+void modInfo()
+{
+    printf("请输入要修改学生的学号");
+    int id;
+    scanf("%d",&id);
+    struct student s;
+    FILE* rp=fopen("./stu.dat","rb");
+    FILE* wp=fopen("./new.dat","wb");
+    if(NULL==rp || NULL==wp)
+        return;
+    while(1==fread(&s,sizeof(s),1,rp))
+    {
+        if(id==s.id)
+        {
+            printf("请重新输入学生信息\n");
+            printf(" 学号 姓名 语文 数学 英语\n");
+            scanf("%d%s%d%d%d",&s.id,s.name,&s.chinese,&s.math,&s.english);
+            s.all=s.chinese+s.math+s.english;
+            if(1==fwrite(&s,sizeof(s),1,wp))
+            printf("修改信息成功\n");
+        }
+        else
+        fwrite(&s,sizeof(s),1,wp);
+    }
+    fclose(rp);
+    fclose(wp);
+    remove("./stu.dat");
+    rename("./new.dat","./stu.dat");
+}
+/*************6 删除学生信息*************/
+void deleteInfo()
+{
+    int n;
+    printf("请输入要删除学生的学号  ");
+    scanf("%d",&n);
+    FILE* rp=fopen("./stu.dat","rb");
+    FILE* wp=fopen("./new.dat","wb");
+    if(NULL==rp || NULL==wp)
+        return;
+    struct student s;
+    while(1==fread(&s,sizeof(s),1,rp))
+    {
+        if(n!=s.id)
+        {
+            fwrite(&s,sizeof(s),1,wp);
+        }
+    }
+    fclose(rp);
+    fclose(wp);
+    remove("./stu.dat");
+    rename("./new.dat","./stu.dat");//以假乱真
+    printf("删除信息成功\n");
+    printf("删除该学生后后的信息为：");
+}
+/***********7 排序**************/
+void sort()
+{
+    int n,i,j,listen;
+    n=get_num();
+    struct student s[MAXSIZE];//定义临时数组存储所有信息
+    struct student t;
+
+    FILE* fp=fopen(DATA_PATH,"rb");
+    if(NULL==fp)
+        return;
+    for(i=0;i<n;i++)
+    {
+        fread(&s[i],sizeof(struct student),1,fp);
+    }
+    fclose(fp);
+
+    printf("请选择模式显示（成绩从高到低，学号从小到大）\n");
+    printf("1: 按语文成绩 2:按数学成绩 3：按英语成绩 4：按总分 5.按学号\n");
+    printf("您的选择是  :");
+    int chioce;
+    scanf("%d",&chioce);
+    printf("学号 姓名     语文 数学 英语 总分\n");
+    for(i=0;i<n-1;i++)
+    {
+        listen=i;
+        for(j=i+1;j<n;j++)
+        {
+            switch(chioce)
+            {
+                    case 1:
+                        {
+                            if(s[j].chinese>s[listen].chinese)
+                            listen=j;                           
+                            break;
+                        }
+                    case 2:
+                        {
+                            if(s[j].math>s[listen].math)
+                            listen=j;                           
+                            break;
+                        }
+                    case 3:
+                        {
+                            if(s[j].english>s[listen].english)
+                            listen=j;                           
+                            break;
+                        }
+                    case 4: 
+                        {
+                            if(s[j].all>s[listen].all)
+                            listen=j;                           
+                            break;
+                        }
+                    case 5: 
+                        {
+                            if(s[j].id<s[listen].id)
+                            listen=j;                           
+                            break;
+                        }
+            }
+        }
+        if(i!=listen)
+        {
+            t=s[i];//借助临时结构体变量交换结构体！
+            s[i]=s[listen];
+            s[listen]=t;
+        }
+
+    }
+    for(i=0;i<n;i++)
+        printf("%-5d%-10s%-4d%-5d%-5d%-4d\n",s[i].id,s[i].name,s[i].chinese,s[i].math,s[i].english,s[i].all);
+
+}
+void main()
+{
+    while(1)
+    {
+        system("cls");
+        show();
+        int i;
+        printf("您的选择是  ");
+        scanf("%d",&i);
+        system("cls");
+        switch(i)
+        {
+        case 1:
+            {   
+                while(1)
+                {
+                    CreateInfo();
+                    getchar();
+                    char c;
+                    printf("是否继续(y/n)");
+                    scanf("%c",&c);
+                    if(c=='n')
+                        break;
+                    else if(c=='y')
+                        continue;
+                    else
+                        printf("输入不符合要求\n");
+                }
+                break;
+            }
+        case 2:
+            {
+                while(1)
+                {
+                    search();
+                    getchar();
+                    char c;
+                    printf("是否继续(y/n)");
+                    scanf("%c",&c);
+                    if(c=='n')
+                        break;
+                    else if(c=='y')
+                        continue;
+                    else
+                        printf("输入不符合要求\n");
+                }
+                break;
+            }
+        case 3:
+            {
+                while(1)
+                {
+                    modInfo();
+                    getchar();
+                    char c;
+                    printf("是否继续(y/n)");
+                    scanf("%c",&c);
+                    if(c=='n')
+                        break;
+                }
+                break;
+            }
+        case 4:
+            {
+                while(1)
+                {
+                    ShowInfo();
+                    deleteInfo();
+                    ShowInfo();
+                    getchar();
+                    char c;
+                    printf("是否继续(y/n)");
+                    scanf("%c",&c);
+                    if(c=='n')
+                        break;
+                } 
+                break;
+            }
+        case 5:
+            {
+                while(1)
+                {
+                    sort();
+                    getchar();
+                    char c;
+                    printf("是否继续(y/n)");
+                    scanf("%c",&c);
+                    if(c=='n')
+                        break;
+                    else if(c=='y')
+                        continue;
+                    else
+                        printf("输入不符合要求\n");
+                }
+                break;
+            }
+        case 6:return;
+        }
+    }
+
+}

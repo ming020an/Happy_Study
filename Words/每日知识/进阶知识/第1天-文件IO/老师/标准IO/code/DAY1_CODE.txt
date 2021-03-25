@@ -1,0 +1,351 @@
+DAY 1 源代码 C
+
+//fopen.c
+
+#include <stdio.h>
+#include <errno.h>
+
+
+int main(int argc, char *argv[])
+{
+	FILE *fp = NULL;
+
+	fp = fopen("bucunzai.txt", "r");
+	if (fp == NULL)
+	{
+		perror("fopen error");
+	
+		return -1;
+	}
+
+	int ch;
+
+	ch = getc(fp); //fgetc(fp);
+	if (ch == -1)
+	{
+		perror("fgetc error");
+
+		fclose(fp);
+		return -1;
+	}
+
+	printf("%c\n", ch);
+
+	ch = fgetc(fp); //fgetc(fp);
+	if (ch == -1)
+	{
+		perror("fgetc error");
+
+		fclose(fp);
+		return -1;
+	}
+
+	printf("%c\n", ch);
+
+	fclose(fp); //不能用fclose("bucunzai.txt");
+
+	return 0;
+}
+
+//flush.c
+
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+
+int main()
+{
+	printf("hello");
+
+	sleep(10);
+	fflush(NULL);
+
+	while(1);
+}
+
+//fputc.c
+#include <stdio.h>
+#include <errno.h>
+
+int main(int argc, char *argv[])
+{
+	FILE *fp = NULL;
+
+	fp = fopen(argv[1], "a");
+	if (fp == NULL)
+	{
+		perror("fopen error:");
+		return -1;
+	}
+
+
+	fputc('B', fp); //putc('B', fp);
+	
+
+	fclose(fp);
+	
+}
+
+//fscan.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	FILE *fp = fopen("stu.txt", "r");
+	if (fp == NULL)
+	{
+		perror("fopen error:");
+		return -1;
+	}
+
+	int num;
+	char name[32];
+	int score;
+	int r;
+
+	r = fscanf(fp, "%d%s%d", &num, name, &score);
+	r = fscanf(fp, "%d%s%d", &num, name, &score);
+	
+	printf("num = %d name = %s score = %d r = %d\n",
+		num ,name, score, r);
+
+
+	fclose(fp);
+	return 0;
+}
+
+//fwrite.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	#if 0
+	FILE *fp;
+
+	fp = fopen("test.bin", "w");
+	if (fp == NULL)
+	{
+		perror("fopen error");
+		return -1;
+	}
+
+	int a[10] = {1,2,3,4,5,6,7,8,9,10};
+	int ret;
+	ret = fwrite(a, sizeof(a[0]), 10, fp);
+	if(ret == -1)
+	{
+		perror("fwrite error");
+		fclose(fp);
+		return -1;
+	}
+
+	fclose(fp);
+
+	#else
+
+	FILE *fp;
+
+	fp = fopen("test.bin", "r");
+	if (fp == NULL)
+	{
+		perror("fopen error");
+		return -1;
+	}
+
+	int a[10] ;
+	int ret;
+	ret = fread(a, sizeof(a[0]), 10, fp);
+	if(ret == -1)
+	{
+		perror("fwrite error");
+		fclose(fp);
+		return -1;
+	}
+	int i;
+
+	for (i = 0; i < ret; i++)
+	{
+		printf("%d ", a[i]);
+	}
+	printf("\n");
+
+	fclose(fp);
+
+	#endif
+}
+
+
+//getchar.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	int ch;
+
+	//ch = getchar(); 
+	ch = fgetc(stdin);
+
+	printf("%c\n", ch);
+
+
+	return -1;
+}
+
+//gets.c
+#include <stdio.h>
+#include <errno.h>
+
+
+int main()
+{
+	#if 0
+	//char s[8];
+	//char *s; //s指向哪个空间，不知道!!!! malloc一个空间，赋值给s
+
+	char *s = "12345"; //s指向一块只读空间，gets(s)也是有问题的
+
+	gets(s);//必须要确保s指向的一块空间，是可以写的。
+
+	#endif
+
+	char s1[8];
+	char s2[8] = {"12345"};
+
+	printf("%p\n%p\n",s1,s2);
+
+	//gets(s1); //假设用户输入大于8个字符，程序的行为是undefined 
+	fgets(s1, 9, stdin);
+	
+	printf("%s\n%s\n", s1,s2);
+	
+}
+
+//line_buffer.c
+#include <stdio.h>
+
+int main()
+{
+	printf("ge yiu don't believe you!!");
+	while (1);
+	return 0;
+}
+
+//printf.c
+#include <stdio.h>
+
+int main()
+{
+	int a = 12345;
+	char c;
+	int r ;
+
+
+	r = printf("a = %d c = %c\n", a, c);
+	//	a = 12345 c = 
+
+	printf("r = %d\n", r);
+}
+
+//putchar.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	putchar('A');
+	fputc('A', stdout);
+}
+
+//puts.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	char *s = "ABCDE";
+	puts(s);
+
+	fputs(s, stdout);
+}
+
+//scanf.c
+#include<stdio.h>
+
+int main()
+{
+	int r ;
+	int a ;
+	char c;
+	char t;
+	
+	//r = scanf("abcd%d %c", &a, &c);
+	r = scanf("%d %c",&a,&c);
+	t = getchar(); //getchar用来消耗scanf输入结束的\n的
+
+	printf("a = %d c = %c r = %d\n", a,c, r);
+
+	printf("t = %d\n", t);
+
+	return 0;
+}
+
+//snprintf.c
+#include <stdio.h>
+
+int main()
+{
+	char s[8];
+	char *str = "1234567890";
+	int r;
+
+	r = snprintf(s, 8, "%s", str);
+
+	printf("r = %d\n",r);
+	printf("%s\n",s);
+	
+
+	return 0;
+}
+
+//sprintf.c
+#include <stdio.h>
+#include <errno.h>
+
+int main()
+{
+	char filename[256];
+	char *file = "xxx.mp3";
+	char *file2 = "yyy.mp3";
+	int r = 0;
+	 r += sprintf(filename, "/home/%s ", file);  // filename: /home/xxx.mp3 
+
+	r +=	sprintf(filename + r, "/home/%s ", file2); // filename: /home/yyy.mp3 
+
+
+	printf("%s\n", filename);
+	
+}
+
+//sscanf.c
+#include <stdio.h>
+
+int main()
+{
+	//const char *str = "ABCD1234 A";
+	const char *str = "1234BCDDDDD";
+	int r ;
+	int a ;
+	char c;
+	r = sscanf(str, "%d %c", &a, &c);
+	
+
+	printf("a = %d c = %c r = %d\n", a, c, r );
+
+	return 0;
+					
+}
+
+

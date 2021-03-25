@@ -1,0 +1,33 @@
+写一个程序，在开发板上面循环播放一个目录里mp3文件
+
+
+		madplay  /home/music/test.mp3
+		sum   65 75
+
+		
+		execlp("madplay", "madplay", "xxx.mp3", NULL);	
+		
+	1.实现循环播放
+	
+	
+	
+		创建一个链表用来保存mp3的文件名
+		
+		
+		while (1)
+		{
+			取下一首mp3
+			
+			pid_t pid = fork();
+			if (pid > 0)
+			{
+				wait(NULL);
+			}
+			else if (pid == 0)
+			{
+				execlp();//execlp("madplay", "madplay", "xxx.mp3", NULL);
+				//"xxx.mp3"是指定目录下的所有的.MP3文件
+			}
+			
+		}
+	

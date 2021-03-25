@@ -1,0 +1,633 @@
+ 
+1. 为什么需要标准IO？
+	YOU Know,  每个操作系统下面，对文件的管理和接口不一样
+		(LINUX: open/read/write..., struct file, sturct inode ;
+		Windows: WinOpen...)
+	＝〉同一个文件，在不同的操作系统下面，我们的操作文件的代码都不一样！！！	
+	Ｃ语言标准委员会，就觉得他应该来一统江湖，统一文件操作的接口, => 标准IO库。
+	标准IO库统一了文件操作的接口.
+		"文件"：普通的文本文件和二进制文件。
+				文本文件：以字符的ASCII来解析的文件。 .c .h .txt ....
+				二进制文件: 有特定格式的文件. .jpg, .bmp, .gif, .mp3, .mp4, ...
+				
+	
+	在标准IO库中，　用结构体　　FILE 来表示一个文件，　然后它在FILE中创建两个
+	缓冲区，一个读缓冲区，一个写缓冲区
+	
+	FILE
+	{
+		char *in ; //指向读的缓冲区
+		char *out; //指向写的缓冲区
+		
+		....
+	};
+	
+	还提供了对"文件"操作的接口函数，
+		fopen/fclose/fread/fwrite/.... 
+		
+	标准IO带缓冲的IO,IO流，　它的效率要比系统IO要高，why???　带缓冲
+		系统io:
+			read 1bytes  从硬盘中读一个字节出来
+			
+		标准IO
+			fread 1bytes, 它会从硬盘上读一块(如512字节)出来，放到标准io的缓冲区中
+			
+		缓冲　同步问题！！！
+		
+	缓冲区开多大呢?标准IO缓冲区类型:
+		行缓冲:缓冲区数据达到一行，同步到硬件上去。
+				假设您设置一行为顶多80个字节，
+				那么这个缓冲区中的数据如果达到80个字节或遇到\n，它就会把缓冲
+				区的数据同步到硬件上去。
+				\n\r
+				
+				
+				
+				
+				printf  -> 行缓冲
+	
+				
+				main()
+				{
+					printf("ge yiu don't believe you!!");
+					while (1);
+				}
+				
+				
+		全缓冲: 缓冲区中数据要填满整个缓冲区，才同步到硬件中去.
+			
+		无缓冲:　缓冲区中有一个字节，就同步一个字节。
+			  如:
+				perror
+				
+	标准io库，会为自动为每个进程，打开三个标准IO流(文件),
+		标准输入 : FILE *stdin
+				stdin是定义在<stdio.h>中的一个全局变量，它指向标准输入设备(一般为键盘)
+					scanf(); 就是从文件stdin中去获取数据
+		标准输出: FILE *stdout
+				stdout是定义在<stdio.h>中的一个全局变量，它指向标准输出设备(一般为终端)
+					printf(); 就是把内容输出到stdout中去
+		标准出错: FILE *stderr
+				stderr是定义在<stdio.h>中的一个全局变量，它指向标准出错设备（一般为终端）
+					perror(); 不是把出错信息输出到stderr中去
+		
+2.  标准IO的函数接口
+	(1)打开或关闭一个文件流 421 rwx 
+		fopen
+		fclose
+	
+		NAME
+       fopen,  - stream open functions
+
+	SYNOPSIS
+       #include <stdio.h>
+
+			fopen用来打开一个标准io流
+       FILE *fopen(const char *path, const char *mode);
+				path: 指向要打开的文件的文件名(带路径)
+				mode: 打开文件的方式，有如下几种情况:
+					"r": 只读打开。文件不存在，则报错。打开后，光标在开头。
+					"r+": 读写打开。文件不存在，则报错。打开后，光标在开头。
+					
+					"w": 只写打开。文件不存在，则创建。打开后，文件内容截短(文件内容被清掉)
+						　光标在开头。
+					"w+":读写打开。文件不存在，则创建。打开后，文件内容截短(文件内容被清掉)
+						光标在开头。
+						
+					"a": append 追加打开，文件不存在，则创建。打开后，光标在末尾。
+					"a+": 读写打开，文件不存在，则创建。原始读的位置在开头，原始写的位置在末尾。
+
+			返回值:	
+				成功返回打开文件的指针　　FILE* 后续标准IO库的函数都需要利用它来指定一个文件
+					
+				失败返回NULL,　errno被设置。
+					
+					errno:出错代码。它是在定义在 errno.h中的一个全局变量，
+					表示上一个错误的代码。系统为每一个错误，指定一个出错的代码，　man errno
+					
+						perror是用来把出错代码相应的解释字符串指针出来,
+							errno == EACCESS
+					perror("str"); -> 先输出用户的提示字符“str” 然后在输出　　:错误误对应的解释字符串
+							
+							-> str:Permission denied
+	=============
+		NAME
+       fclose - close a stream
+
+		SYNOPSIS
+       #include <stdio.h>
+
+			fclose用来关闭fp指定的文件流。
+       int fclose(FILE *fp);
+	   
+	   	
+	(2)读写文件流: 一旦读写成功啦，光标会自动往后面移n个位置(n就是您读写的字节数)
+		2.1.每次一个字符读写
+				fgetc/getc/getchar
+				fputc/putc/putchar
+		2.2. 每次一行读写  
+				fgets/gets  读一行
+				fputs/puts  输出一行
+		2.3. 直接读写，您想要读写多少个字节都可以，看您方便。
+				fread
+				fwrite
+		
+		2.1.每次一个字符读写
+			fgetc/getc/getchar
+			fputc/putc/putchar
+					
+		NAME
+		   fgetc,  getc, getchar, - input of characters and strings
+
+		SYNOPSIS
+		   #include <stdio.h>
+
+				fgetc用来从stream指定文件流中读取下一个字符
+		   int fgetc(FILE *stream);
+				stream: FILE*,指定要从哪个文件流中读取字符
+				返回值:
+					成功返回读取到的字符的ASCII码，
+					失败返回 -1, 同时error被设置
+		 
+				getc与fgetc一样，用来从stream指定的文件流中读取下一个字符
+				。getc与fgetc的区别在:
+					fgetc是用函数实现的
+					getc可能是用宏来实现的
+		   int getc(FILE *stream);
+
+				getchar是用来从标准输入设备上获取下一个字符
+					getchar() <=> fgetc(stdin)
+		   int getchar(void);
+
+		 ================
+			NAME
+			   fputc,  putc, putchar - output of characters and strings
+
+		SYNOPSIS
+			   #include <stdio.h>
+
+			   
+					fputc用来把c指定的字符，输出到stream指定的文件流中去	
+			   int fputc(int c, FILE *stream);
+				　	返回值:
+					成功返回实际写入到文件流的中的字符的ASCII码(c的ASCII码)
+					失败返回-1, 同时errno被设置。
+
+		
+					putc与fputc功能与返回值一样，只不过putc的实现可能是用宏来实现的
+			   int putc(int c, FILE *stream);
+
+			   
+					putchar是用来把c指定的字符，输出到标准输出设备(stdout)中去
+			   int putchar(int c);
+					putchar(c) <=> fputc(c, stdout);
+		
+		练习：
+			１.　利用标准io库来实现两个文件的拷贝！
+				　文件名由命令行参数传入
+					./main 1.txt 2.txt	
+					
+					
+							把1.txt的文件内容　拷贝到2.txt中去。
+							
+							
+					int main(int argc, char *argv[])
+					{
+						FILE *fp1, *fp2;						
+						fp1 = fopen(argv[1], "r");
+						fp2 = fopen(argv[2], "w");
+											
+						if (fp1 == NULL || fp2 == NULL)
+						{
+							perror("fopen error");
+							return -1;
+						}
+						
+						while (1)
+						{
+							char ch;
+							ch = fgetc(fp1);
+							if (ch == EOF) -1的补码：11111111
+							{
+								break;
+							}
+							fputc(ch, fp2);
+						}
+						
+						fclose(fp1);
+						fclose(fp2);
+					}
+			
+		2.2. 每次一行读写
+			NAME
+				  fgets,  gets, - input of characters and strings
+
+			SYNOPSIS
+				   #include <stdio.h>
+
+						gets用来从标准输入流(stdin)获取一行字符，
+						存储到s指向的内存空间中去。
+				 char *gets(char *s);
+						s:指向的空间，用来存放从输入缓冲区中获取到的字符
+						返回值:	
+							成功返回s的首地址，
+							失败返回NULL, 同时errno被设置。
+					
+					
+						NOTE:
+							gets有一个巨大的bug, 你懂的！！！！！（gets.c）
+							gets没有考虑到s指向空间的大小问题，存在越界的可能。
+							所以从今天开始，gets你们就不能用啦，除非你将来有一天
+							像我一样，当讲师，需要跟学生演示这个bug!!!!!!!
+					gets(s)
+						=>
+						 fgets(s, size, stdin);
+				
+				
+						fgets正是为了解决gets这个bug,而诞生的！！
+						fgets用来从stream指定的文件流中，读取顶多size-1个字节到s指向的空间中去。
+				   char *fgets(char *s, int size, FILE *stream);
+							s: 指向的空间用来保存从文件流中获取到的数据
+							size:表示您最多获取size个字节，size一般为s指向的空间的可用长度。
+									fgets输入结束有两中情况:
+									(1)  遇到\n或文件结束
+									(2) 已经读到size-1个字节啦(后面留一个位置给\0)
+							stream: FILE*指针，表示从哪个文件流中读取数据
+							
+							返回值:
+								成功返回s的首地址，
+								失败返回NULL,同时errno被设置。
+								  
+
+			 NAME
+				   fputs, puts - output of characters and strings
+
+			SYNOPSIS
+				   #include <stdio.h>
+
+				
+						fputs用来把s指向的字符串，输出到stream指定的文件流中去。
+						
+				   int fputs(const char *s, FILE *stream);
+						s:指向要输出的字符串
+						stream: FILE*表示要输出到哪个文件流中去
+						返回值:
+							成功返回一个非负数
+							失败返回 -1, 同时errno被设置
+
+						puts用来把s指向的字符串，输出到标准输出流(stdout)中去，多会输出一个\n
+				   int puts(const char *s);
+
+						返回值:
+							成功返回一个非负数
+							失败返回 -1, 同时errno被设置
+							
+						puts(s) <=> fputs(s, stdout);
+						
+		==================================
+
+		2.3. 直接读写，二进制读写(可以读写数组)。
+				fread
+				fwrite		
+			NAME
+			   fread, fwrite - binary stream input/output
+
+		SYNOPSIS
+			   #include <stdio.h>
+
+			   
+						fwrite用来把ptr指向的数组(数组中有n个元素，且每个元素size字节，总大小 n*size)
+						写入到stream指向的文件中去。
+							
+							fwrite把内存中的一个数组，写入到文件中去。
+						
+			     size_t fwrite(const void *ptr, size_t size, size_t n, FILE *stream);
+						ptr:要写入的数组的首地址
+						size:数组元素的大小
+						n:数组元素的个数
+						stream: FILE*表示要写到哪个文件流中去
+							 
+						返回值:
+							成功返回实际写入文件中去的数组元素个数
+							失败返回-1, 同时errno被设置。
+			   
+						
+						fread用来从stream指定的文件中，读取一个数组(数组有n个元素，且每个元素size字节，
+						总大小为 n*size)到ptr指向的空间中去
+			   size_t fread(void *ptr, size_t size, size_t n, FILE *stream);
+						ptr:要读入的的数组的首地址
+						size:数组元素的大小
+						n:数组元素的个数
+						stream: FILE*表示要从哪个文件流
+							 
+						返回值:
+							成功返回实际读入文件中去的数组元素个数
+							失败返回-1, 同时errno被设置。
+			 			
+	
+	(3) fflush冲洗文件流，　同步
+	NAME
+       fflush - flush a stream
+
+	SYNOPSIS
+		   #include <stdio.h>
+
+		   int fflush(FILE *stream);
+
+	DESCRIPTION
+			对输出流，fflush把写缓冲区的内容写/更新到文件中去。
+			对输入流，fflush把读缓冲区的内容直接discard(抛弃)
+			如果stream为NULL,fflush把该进程所有打开的输出文件流同步。
+						
+				printf("hello");
+			
+				sleep(10);
+				fflush(NULL);
+				
+				while(1);
+						
+	(4) 定位文件流
+		上面讲到，fread/fgets ...只是说到要从哪个文件，读多少字节的数据，并
+		没有指定从文件的哪个位置开始读，　标准IO库会为每个打开的文件流保存一个
+		"文件偏移量"！！
+		
+		“文件偏移量”: offset, “光标”。直接确定下一个读可写的起始位置！！！！！
+		理论上讲，每次读或写之前，先要定位光标！！！！！
+			
+		SYNOPSIS
+       #include <stdio.h>
+			
+			fseek用来定位光标。
+       int fseek(FILE *stream, long offset, int whence);	
+			stream:FILE*，表示要定位哪个文件。
+			offset: 偏移量，可正可负。
+			whence:	定准方式，有如下几种:
+					SEEK_SET: 基于文件开头定位
+						新光标位置= 文件开头　+ offset(>=0)
+							
+							如：fseek(stream, 54, SEEK_SET);
+					SEEK_CUR: current 基于当前光标位置定位
+						新光标位置=当前光标位置+ offset(可正可负)
+					SEEK_END: 基于文件末尾定位
+						新光标位置=文件末尾+offset(可正可负)
+						
+			返回值:
+				成功返回0
+				失败返回-1, 同时errno被设置。
+				
+		 
+				ftell返回当前光标位置离文件开头有多少字节
+		 long ftell(FILE *stream);
+		 
+			例子: 求一个文件的大小。
+				
+				fseek(stream, 0, SEEN_END);
+				long l = ftell(stream);
+				
+			
+			rewind把文件光标位置，定位在文件开头。
+		  void rewind(FILE *stream);
+			<=>  (void) fseek(stream, 0L, SEEK_SET)
+		
+	(5) 文件出错/文件结束
+			 
+			eof: end of file 文件结束
+			
+			feof用来判断stream指定的文件流是否结束
+			 int feof(FILE *stream);
+				返回值:
+					返回真(非0)如果文件到达末尾
+					返回假(0)如果文件没有到达末尾
+					
+				标准IO库，在读到文件末尾时，会往读缓冲区中填入一个EOF(二进制 11111111)	
+	
+	
+	(6) 格式化IO
+		6.1 格式化输入
+				
+		NAME
+       scanf, fscanf, sscanf,  - input format conversion
+
+		SYNOPSIS
+			   #include <stdio.h>					
+					fflush(stdin)
+					scanf用来格式化输入的。按照指定的格式从标准输入流(stdin)中获取输入字符并
+					存储到相应的地址中去。
+			   int scanf(const char *format, ...);
+			   
+					scanf可以带很多个参数，scanf的参数可以分为两类：
+					第一类参数就是第一个参数，格式化字符串　format string:
+						"格式化字符串"就是告诉用户怎么输入的，意思是说您得按照格式化字符串指定的意思去输入。
+						在“格式化字符串”中有三类指令：
+						a. 空白符(space ,tab) -> 指示用户　您可以输入任意数量的空白符(包含0个)
+								scanf把\n当作是输入结束
+						b. 非转义字符(除空白符和%以外的字符) -> 精确匹配，您得原模原样输入
+						c. 转义字符(以%开头的字符)，有特殊含义:
+							%d  -> [0-9]+
+							%c  -> 匹配一个字符(可以输入的字符)
+							%f  -> 浮点数
+							%s  -> 字符串(不带空白符，scanf把空白符当作是一个分隔符)
+							……
+										
+					
+					其他参数为第二类，地址列表:
+						格式化字符串中一个转义字符对应一个地址，把一个转义字符的输入存储到一个指定的地址中去。
+						如果	转义字符的个数　多于地址个数，程序行为将是undefined(未定义的)
+						
+					scanf获取输入时，何时结束?
+						a. 该输入的都输入完了
+							scanf("abcd%d %cabcd", &a, &c);
+								abcd1234Aabcd ->该输入的都输入啦，scanf结束输入
+								
+						b. 失败啦
+							matching failure 匹配失败
+							
+							scanf("abcd%d %cabcd", &a, &c);
+								ABCD -> 停止获取输入
+								
+					返回值：
+						成功匹配的变量个数！！！！
+						r=0:
+						\r \n ?
+									
+					例子：
+						int r ;
+						int a ;
+						char c;
+						
+						r = scanf("abcd%d %c", &a, &c);
+							假如用户输入:
+								ABCD123 A
+							a =? c = ? r = ?
+							a c 未定义的 r == 0
+							第一个没有匹配，就没戏了，r=0
+							
+						r = scanf("%d %c",&a, &c);
+						假如用户输入: 
+							123B
+							a = ? c = ? r = ?
+
+					sscanf它的功能与返回值，　和scanf一样，只不过，sscanf它的输入来源
+					不是标准输入流，而是str指定的字符串，所以sscanf的参数可以分为三类
+						第一个参数为　一个字符串，表示输入来源
+						第二个参数为　格式化字符串，与scanf一样
+						其他它的参数为　地址列表
+			   int sscanf(const char *str, const char *format, ...);
+
+				例子:
+					//const char *str = "ABCD1234 A";
+					const char *str = "1234BCDDDDD";
+						int r ;
+						int a ;
+						char c;
+					r = sscanf(str, "%d %c", &a, &c);
+					
+						a = ? c = ? r = ?
+			   		r是什么呢？不是字符的个数
+					fscanf它的功能与返回值，　和scanf一样，只不过，fscanf它的输入来源			不是标准输入流，而是stream指定的文件，所以fscanf的参数可以分为三类
+						第一个参数为　一个FILE*,指定输入来源
+						第二个参数为　格式化字符串，与scanf一样
+						其他参数为　地址列表
+			   int fscanf(FILE *stream, const char *format, ...);
+			   注意：个数、类型都匹配。
+			   
+			   例子:	
+					假设文件stu.txt的内容如下:
+						1  zhoulong 80
+						2  lisi  90
+											
+					FILE *fp = fopen("stu.txt", "r");
+					
+					int num;
+					char name[32];
+					int score;
+					int r;
+					
+					r = fscanf(fp, "%d%s%d", &num, name, &score);
+					r = fscanf(fp, "%d%s%d", &num, name, &score);
+						思考题：
+						num　name     score 
+						1    zhoulong 80
+						2    lisi     90
+							
+		
+		6.2 格式化输出
+		NAME
+       printf, fprintf, sprintf, snprintf,  vsnprintf - formatted output conversion
+
+		SYNOPSIS
+       #include <stdio.h>
+
+			printf用来格式化输出的。您得按它指定的格式去输出！！
+			
+       int printf(const char *format, ...);
+			printf可以带多个参数，这么多参数，可以分为两类:
+			第一个参数为　　格式化字符串 -> 就是告诉您怎么输出的
+				格式化字符串有两类字符:
+				a. 转义字符
+					%d -> 按十进制的格式输出
+					%f
+					%g
+					%e
+					%c -> 输出字形
+					%s -> 输出字符串
+					...
+				b. 非转义字符
+					您得原模原样输出！！！
+					
+			
+			其他参数为，要输出的变量或对象列表
+					要输出的变量或对象个数　应该与　转义字符　个数相同。
+					
+			返回值:
+				实际打印的字符个数。
+				
+			int a ;
+			char c;
+			int r ;
+			
+			
+			r = printf("a = %d c = %c", a, c);
+			
+				r = ? 
+			思考：
+			r=printf("%d",printf("%d",(printf("%d",43))))
+			r = ? 
+			
+			fprintf它的功能与返回值，和printf一样的，只不过，fprintf
+			输出不是到标准输出流，而输出到stream指定的文件中去。所以
+			fprintf它的参数，可以分为三类：
+				第一个参数为　FILE*,指定输出到哪个文件中去
+				第二个参数为　　格式化输出字符串
+				其他参数为　变量或对象的列表
+			返回值，为实际输出到文件中去字符个数
+			
+			printf(format,...);  <=> fprintf(stdout, format, ...)
+       int fprintf(FILE *stream, const char *format, ...);
+	   
+	   
+			
+			sprintf它的功能与返回值，和printf一样，只不过,sprintf
+			输出不是到标准输出流，而是输出到str指定的内存中去，所以
+			sprintf它的参数，可以分为三类:
+				第一个参数，　内存地址，指定输出到哪个内存空间中去
+				第二个参数　格式化输出字符串
+				其他参数为　变量或对象的个数
+			返回值，为实际输出到内存中去字符个数
+       int sprintf(char *str, const char *format, ...);
+	   
+			
+			例子：
+				char filename[256];
+				char *file = "xxx.mp3";
+				int r = sprintf(filename, "/home/%s", file);
+				
+						filename: /home/xxx.mp3
+	   
+			我告诉你，sprintf有一个bug ????????
+				str只是指定了一个内存的起始地址，并没有限定它的内存范围，
+				输出字符串的长度，有可能超出这段内存的范围，　有越界的可能。
+			
+			所以，正是为了解决这个bug,才有下面的snprintf
+		
+				size指定的str指向的那段内存空间的最大长度，
+				也就是说，格式化输出顶多输出size-1个字符到str指向的空间中去。
+       int snprintf(char *str, size_t size, const char *format, ...);
+	   
+			char s[8];
+			char *str = "1234567890";
+			int r;
+			
+			r = snprintf(s, 8, "%s", str);
+			
+				printf("%s\n",s);
+				r = 10 !!!!!
+			
+			NOTE:	
+				snprintf它的返回值是　应该输出的字符串的长度(而不是实际输出到内存中的长度！！)
+
+		
+		作业：
+		1. 用标准IO库函数，来实现一个学生成绩管理系统!!!
+			struct score
+			{
+				int num;　//学号是唯一的180301
+				char name[32];
+				int score;
+			};
+		
+			增、删、改、查(包含按某个域排序)!!
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

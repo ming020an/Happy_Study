@@ -1,0 +1,594 @@
+0.安装并配置一个Linux系统 (利用虚拟机/实体机)
+	ubuntu 红帽  .....
+	vmware 虚拟机
+	ubuntu系统的安装
+	vmware tools 
+		------->共享工具,用来实现虚拟机文件系统和实体机文件系统的共享
+		安装步骤:
+			虚拟机 ----> 更新(下载)vmwar tools
+				---->在系统弹出的文件夹中找到压缩包(vmwaretools-版本号-.tar.gz)
+				---->复制上述文件到 主文件夹
+				---->右键 提取到此处
+				---->进入 vmware-tools-distrib 文件,打开终端
+				---->执行命令  sudo ./vmware-install.pl
+					当终端弹出的信息中有 [] 时,敲 回车键 
+					等到再一次出现命令行,则表示执行完成
+				---->关机(ubuntu) 重启 vmware
+	共享文件夹的设置
+			虚拟机--->设置----->选项---->文件夹共享
+	ip的配置
+			虚拟机---->设置---->硬件---->网络适配器
+					----->桥接模式/复制物理网络链接状态
+			ifconfig命令用来查看相关的网络信息
+			ping ip/网址 用来验证系统联网状态
+			ping www.baidu.com
+			
+			
+1.APT(Advanced Packaging Tool)
+	Ubuntu中最强大命令行软件包管理工具
+	用来获取、安装、编译、卸载和查询软件包，以及检测软件包的型号关系
+	-------》有点像 ”360软件管家“
+	password : 密码 (passwd)
+	工作原理：
+	/etc/apt/sources.list 用该文件保存了所有软件目录(服务器地址)
+	
+	服务器速率是不同的,在中国 163的服务器比较不错
+	因此我们需要 "换源"
+	1.1换源
+		过程:
+			cd /etc/apt   ------>切换终端工作路径到 /etc/apt
+			sudo cp sources.list.163 sources.list  
+					----->使用 "163的源" 替换掉原本的 "源"
+			
+		(没有sources.list.163的同学从我共享中下载,然后复制粘贴到
+			/etc/apt文件夹中,然后再执行上述命令)
+			
+	1.2从新"源"中下载软件列表
+		sudo apt-get update  ---->从源中更新软件列表
+		
+	1.3下载程序
+		sudo apt-get install *********(软件包的名称)
+		含义:安装 ******** 软件
+		
+		sudo apt-get remove *****
+		含义:卸载 ***** 软件
+		
+		sudo apt-get clean
+		含义:清除所有安装包
+		
+		sudo apt-cache search ****
+		含义:以后面 **** 表达式查找软件包
+		例如:查找pinyin输入法
+			sudo apt-cache search pinyin
+			
+	练习:安装google输入法
+		sudo apt-get install fcitx libssh2-1
+		sudo apt-get install fcitx-googlepinyin
+		
+		系统设置--->语言支持---->键盘输入方式系统选成 fcitx 
+			------->应用到整个系统 --->重启
+		
+2.获取帮组命令  man
+	man:manual  手册
+	linux系统是是一个面向开发者的系统
+	linux自带很多的开发手册,而且给不同的内容分类管理
+		1
+		2
+		3
+		4
+		.....
+	如果您在 Linux中有个命令/函数不会使用,那么可以用 man来获取帮助
+	
+	格式:
+		man 手册分页(1 2 3 4) 名字(要查找的名称)
+		
+		比如:man 2 open
+			man: 命令
+			2: 第2分页
+			open:表示要查找的手册名
+		进入手册页面后 用 q 退出	
+	命令:
+		man -f 名称
+		含义:查看 "名称" 所对应的所有手册页 索引
+		
+		比如: man -f open 
+		
+3.sudo:super do 以超级管理员的权限运行命令
+	在命令前加上 sudo 修饰,表示该条命令是有 root(超级用户) 执行的
+	比如:
+		sudo apt-get install fcitx
+		以 root的权限 来安装 fcitx
+		
+4.vim的使用
+	sudo apt-get install vim   ------>安装vim
+	
+	vi/vim是linux中最基本的 最常用的 功能最强大的命令行文本编辑器
+	vim -----> 文本编辑器  notepad是一样的
+	
+	vi/vim拥有两种操作模式
+	
+	命令模式:在命令模式下,任意键盘输入都会被当成是命令
+		vim的功能之所以强大,就在于vim支持非常多大命令
+		
+	输入模式:在输入模式下,任意键盘输入,都被识别为文本内容
+	
+	vi/vim在启动时都是处于命令模式
+	格式:
+		vi/vim 文本名 (可存在可不存在)
+	
+	输入模式 ---> 命令模式
+		Esc(键)
+		
+	命令模式 ----> 输入模式
+		i:insert  进入输入模式后,光标在当前字符的位置(光标位置不变)
+		I:Insert  进入输入模式后,光标自动跳转到行首
+		
+		a:append  追尾,进入输入模式后,光标在当前字符的后面(光标后移一位)
+		A:Append  追尾,进入输入模式后,光标在行尾
+		
+		o:open 开路,进入输入模式后,在光标当前行后添加一新行,并且光标到新行行首
+		O:Open 开路,进入输入模式后,在光标当前行前添加一新行,并且光标到新行行首
+	
+	
+	vim的配置文件
+		将共享文件夹中的 .vimrc 拷贝到 ubuntu的 主文件夹中
+			在 .vimrc 所在的目录打开终端执行以下命令
+				cp .vimrc ~
+			右键 复制 ,然后在ubuntu的主文件夹中右键 粘贴
+		vim ~/.vimrc
+			
+		练习:
+			使用vim编辑器,将 .vimrc 的第72~89行中的
+				作者和邮箱更改为自己的名字和邮箱地址
+			
+	必须在命令模式下进行
+		vim的退出命令:
+			:q   quit 不保存退出,如果文件被更改过,会提示是否保存
+			:q!  quit! 强制不保存退出,不会有任何提示
+			:w   write 写入,将文件的内容写入到被打开的文件(保存)
+			:w filename 将文件的内容写入 filename 文件中(另存为)
+			:wq  write quit  保存并退出
+			:x  <=> :wq
+			ZZ  <=> :wq
+		
+		vim 撤销操作
+			u undo 撤销
+			
+		vim删除与修改命令
+			x 	删除光标所在的字符
+			dd	delete删除光标所在的行
+			ndd 删除光标开始及后续的n行（剪切操作）
+				比如 4dd 删除光标所在位置和后续总共4行
+
+			r   replace 替换光标所在的单个字符
+				r新字符
+
+			R   Replace 替换光标及光标后的一串字符，直到按esc退出替换
+			    R新字符串esc结束
+
+		vim拷贝和粘贴命令
+			p（小p）   paste/print  将剪贴板的内容粘贴到当前行的后续
+			P(大p) 将剪贴板的内容粘贴到当前行前面
+			yy  yield复制，将光标所在的行复制到剪贴板
+				nyy 将光标所在的行及后续总共n行复制到剪贴板
+	
+		vim搜索命令
+			/要搜索的内容
+				比如 /open
+					表示在当前文件中搜索 open 字符串
+					回车后会标记所有的open
+					用 n 可以跳转到下一个
+					用 N 可以跳转到上一个
+
+		关于vim的一些话
+			vim是一个功能很强大的编辑器，上面讲的只是一些皮毛
+			vim之所以强大在于vim支持非常多的命令
+			vim的配置文件，个人根据自己的喜好去配置
+			
+	练习:
+		利用vim编写一个.c程序,实现1-100求和
+		
+		
+		
+5.Linux系统的维护命令
+	关机 shutdown
+		sudo shutdown -h now
+		立即关机
+		
+	重启 reboot
+		sudo reboot
+		
+	清屏 clear
+		将终端前面的内容清除
+		
+	命令提示: Linux的命令行具有"自动补全"  Tab
+		De+Tab 会列举出所有以De开头的东东,如果只有一个,会自动补全
+		
+	历史命令:
+		linux终端会将所有输入过的命令记录在历史中,用 ↑ 可以查找历史命令
+		
+	切换用户:
+		linux支持多用户同时操作
+		su username
+		比如 su root  切换到超级用户
+			使用su切换用户需要输入用户的密码
+			sudo -s 同样可以切换到root
+			
+	修改用户密码  passwd
+	
+	退出当前用户 exit
+		
+		练习:切换到root用户,求改root用户密码
+		
+		
+6.用户管理
+	/etc/passwd 这个文件中保存了系统所有用户的信息
+	文件中每一行代表一个用户,一行中数据的含义如下(:是分割符)
+	root:x:0:0:root:/root:/bin/bash
+	用户名:口令(密码):用户ID(UID):组ID(GID):用户主目录:用户shell(命令)
+	
+	UID:系统为每一个用户分配的一个标识数,用来标识一个用户
+	GID:为了方便管理所有的用户,Linux采用分组的形式进行管理
+		每个组都有一个ID号,被称为GID,
+		GID相同的用户,表示是同组的
+	用户主目录:Linux给每个用户分配了一个主目录(家目录)
+		家目录的路径在 /home/用户名
+			比如 gec用户的家目录
+				/home/gec  -----> ~
+		用户对于自己的主目录(包括子目录)是拥有绝对权限的,
+			但是除主目录外的其它目录,只有root才有权限
+	
+		建议:每个登陆用户最好在自己的家目录下进行操作
+			启动终端默认就是家目录
+	用户shell:指定解析命令的程序是哪一个
+		shell 壳
+		shell是Linux用来保护内核的一层"壳"
+		shell本身是一个命令解析器,也是一个程序
+			这个程序有很多不同的人在写
+			也就是说有很多不同的shell
+		用户与操作系统核心之间的桥梁就是这个 shell
+		
+		命令执行过程
+			用户输入命令
+			----> shell(进行命令解析)
+			----> OS(操作系统)
+			 shell<-----
+			 用户(终端)<------
+			
+	/etc/group 保存了所有用户组的信息		
+		文件中每一行代表一个用户组
+		组名:口令:GID(组长的UID)/成员列表
+	
+	用户相关管理命令
+		adduser  username   表示添加 username 用户
+			比如: adduser oyhl
+		
+		userdel username    表示删除 username 用户
+			比如: userdel oyhl
+			
+		addgroup groupname 表示创建 groupname 组
+			比如: addgroup ouyang
+			
+		groupdel groupname 表示删除 groupname 组
+			比如: groupdel ouyang
+			
+	练习:请在ubuntu为您的女朋友(男朋友)(将来的)
+			创建一个用户
+			
+	
+	
+7.进程管理
+	进程:正在执行的程序(进程是程序的一次执行过程)   process
+	ps:process status 
+		查看系统当前的进程信息(当前终端运行的进程)
+	ps -ef：every full
+		查看系统中每个进程的全部信息
+		命令后面以 - 开头的表示命令选项
+		
+		
+	UID        PID   PPID      C    STIME       TTY         TIME        CMD
+	root         1     0       1     17:14       ?        00:00:01   /sbin/init	
+	用户	 进程id 父进程id         启动时间  启动系统     活动时间   命令(执行的程序名称)
+
+		
+	top:类似Windows的进程管理器	
+		查看系统中进程的动态信息  cpu占用率  内存占用率
+		
+	杀死进程: kill
+		如果一个进程正在终端中运行,那么直接可以
+			CTRL+C   CTRL+Z
+		上面这两个组合键就是通过发送一个kill信号给当前进程,用来杀死它
+		
+		kill命令杀死进程
+			sudo kill -9 进程号(pid)     杀死进程号为 PID的那个进程
+			sudo killall 进程名       杀死 进程名  这个进程
+	
+	
+	
+
+
+
+linux的命令设计哲学:
+	1.Linux的命令 简明扼要/短小精悍:命令都是英文缩写
+	2.命令的使用 符合日常口语表达
+	
+****8.Linux文件系统的相关命令
+	8.1文件系统的概念和原理
+		当需要把一个文件的数据存储到一个物理介质上去时
+		就需要一个有组织有纪律的管理者,帮助管理这些数据
+		这个组织 这种纪律就是文件系统
+		
+		文件系统:组织和管理文件的系统
+		
+		去存储文件时,必须按照一定的格式取存取,这个格式就是我们经常说的文件系统
+			EXT4
+			FAT
+			NTFS
+			....
+			
+		不同的文件系统 组织 和管理文件的方式不同
+		
+		Linux的文件系统是 树状文件系统 ,所有的文件路径全部从 根(/)开始
+		
+		
+		所有的文件系统都将文件分为两个部分
+			(a)文件属性
+				文件属性用来唯一标示文件的存在  i-node(i结点)
+				包含的内容有:文件类型  文件名  作者  大小  修改日期 .....
+				在系统实现中,用一个结构体来描绘这些属性
+				struct inode
+				{
+					char type;  //标示文件类型
+					char name[32]; //文件名
+					unsingned int size; //文件内容大小
+					time_t time; //创建日期
+					......
+							//指针,指向文件硬件I-node结点的位置
+				};
+				
+				不同的文件系统,i-node的内容和成员布局也不一样
+				
+			(b)文件内容
+				文件存放的数据,文件正文
+				一个文件可以没有内容 "空文件",但是这个文件是存在的,
+					也就是说这个文件有属性
+					
+					
+	8.2Linux文件系统的组织方式
+		如上所述,Linux是一个树状的文件系统
+		Linux的设计哲学: everything is file,on unix/linux
+								一切皆文件
+		文件名可以分为两种:
+			普通文件: 由一些特定的允许的字符组成的文件
+			目录文件:有一些特定的允许的字符 + '/' 组成
+			
+			'/' 在Linux的路径中有两种含义
+				如果在路径最前面表示  根目录
+				否则表示 分隔符
+				
+			目录是用来存放文件的文件,目录下可以存放文件,也可以存放目录
+			
+		Linux的路径名:
+			/  -----> 开头 根目录
+					  其它  分割
+				比如: /mnt/hgfs/cs18139
+					根目录下的 mnt 目录下的 hgfs目录下的 cs18139
+	
+		Linux的路径名可以分为两种形式
+			相对路径:只要不以 '/'开头的路径都是相对路径
+					"相对" 的对象是当前路径
+			绝对路径:是以'/'开头的路径  ---> /mnt/hgfs/cs18139
+			
+			为了方便路径的表述,在每个目录下自动添加了两个子目录
+				.  当前目录
+				.. 上一级目录
+				
+			问:
+				Desktop/1.c:相对路径  当前目录下 Desktop 目录下的 1.c文件
+				/Desktop/1.c:绝对路径 根目录下 Desktop  目录下的 1.c文件
+			
+				../../../.. 
+				
+	(3)文件操作的相关命令
+		cd: change directory 更改目录,切换目录
+				cd 要切换到的那个目录名(可以是相对路径,也可以是绝对路径)
+				cd ~   回家(切换到主目录)
+				cd     回家
+				cd /   切换到根目录
+				cd -   切换到上一次所在的路径(回退)
+				cd ..  切换到上一级目录
+				
+		pwd:显示当前目录的绝对路径名
+		
+			练习:使用命令切换终端的工作路径到  您自己的共享目录
+				cd /       切换工作路径到 /
+				cd mnt     切换到当前目录下的mnt
+				cd hgfs    切换到当前目录下的hgfs
+				cd cs18139 切换到当前目录下的cs18139
+				....
+				
+		ls:list 列举,用来将目录下的所有文件列举出来
+			ls [options] [目录名]
+			ls 目录名:表示列举 目录名下的所有文件
+			ls :表示列举当前目录下的所有文件
+			
+			options:命令的选项
+				-a :all  列举全部文件(包括隐藏文件,隐藏文件以 '.'开头)
+				-l :list 列举详细信息
+				-lh      以人的角度列举详细信息
+		
+				
+			-rwxrwxr-x 1 gec gec     7252 Jan 31 17:27 1
+				-rwxrwxr-x  表示文件类型和文件权限
+				1 文件数量(包括子文件数)
+				gec 文件所有者(用户名)
+				gec  文件所属组(组名)
+				7252 文件的大小(字节)
+				Jan 31 17:27  文件的修改时间
+				1	文件名
+				
+				
+				-    文件类型
+					-  普通文件
+					d  目录文件
+					b  块设备文件
+					c  字符设备文件
+					f  FIFO文件 管道文件
+					s  socket文件
+					l  链接文件
+					.....
+					
+				rwx  用户具有的权限
+				rwx  同组用户具有的权限
+				r-x  其它用户具有的权限
+					r read  读
+					w write 写
+					x exec  可执行
+			练习:列举出 /etc下面的所哟文件,看那些文件是您可写的
+				(1) cd /etc
+					ls -l
+				(2) ls -l /etc
+				
+		chmod:change mode 更改权限
+			chmod u/g/o/a+/-权限  文件名
+				u 用户 user
+				g 组  group
+				o 其它 other
+				a 全部 all
+			
+				+权限   表示添加权限
+				-权限   表示去除权限
+			比如: chmod u+r  1.c
+				  sudo chmod a-x  /usr
+				  chmod +rw 2.txt --->给 2.txt文件的 all用户 添加 rw权限
+				  
+				权限位: 每一个用户对应的权限可以用一个8进制数表示
+					一组权限可以用3个8进制数表示
+					rwx rwx rwx
+					r-x rw- -wx
+					
+					0777 ---> rwx rwx rwx
+							  111 111 111	
+					0664 ---> rw- rw- r--
+					          110 110 100
+					0111 ---> --x --x --x
+							  001 001 001
+			
+			
+			练习:为了系统的安全着想,请您将共享目录中可执行程序文件
+				的 其它用户 可执行权限 去掉
+				chmod 0776 xxx
+				----> chmod u+rwx ***
+					  chmod g+rwx ***
+					  chmod o+rw ***
+					  chmod o-x ***
+					 
+				chmod 0-x ***	
+		
+		chown:change owner 改变所有者
+			chown -R 新的所有者:新的组 filename
+				-R:如果 filename 是一个目录,则通过 -R 将该目录下所有
+					子文件(子目录),都更改所有者
+					
+				例子:
+					chown -R gec:gec /oyhl
+					
+		cp:copy 复制
+			cp [options] (source)要复制的文件  (dest)目标文件
+			
+			source      dest
+			文件1       文件2      将文件1 拷贝一个 到 文件2
+			文件1       目录2      将文件1 拷贝到  目录2中(会在目录2中拥有一个同名文件)
+			目录1       目录2      将目录1 中的所有内容拷贝到目录2中
+			
+			options:
+				-r  recursive  递归地,如果souuce是一个目录
+					那么会现将目录中的所有东西都复制
+				-f  force 强制,非交互式拷贝
+			例如:
+				cp -rf tftp/ Desktop/
+				
+		mv: move 移动(剪切/重命名)
+			mv source dest
+				source 源文件,要移动的那个文件
+				dest 目标文件,移动后的那个文件
+				
+			比如: mv 1.c 3.c
+			
+		rm:remove 移除 将文件/目录删除掉(找不回来了)
+			rm [options] dest
+				dest:要移除的文件
+				
+				opentons:
+					-f 强制删除,非交互式的移除
+					-r 递归地
+					
+				比如: rm -rf directory
+					  rm -rf file
+					
+		mkdir: make directory 创建一个新目录
+			mkdir [-p] 要创建的目录名
+				-p:parent 父目录
+					一路的创建下去
+				例如:
+					mkdir oyhl
+		rmdir:用来移除一个 空目录
+			rmdir 要移除的空目录名
+			
+			
+			
+			练习: 1.在家目录中创建一个属于自己的目录,
+					然后在自己的目录中编写一个程序(自己想)
+					将编译生成的程序文件拷贝到 桌面
+					
+		链接文件:
+			在Linux下链接分为两种
+				软链接(符号链接  softlink)
+					ln -s target link_name
+					创建一个名为 link_name的软链接文件,这个软链接文件
+					链接着 target
+					
+					
+				硬链接(link)
+					ln target link_name
+					创建一个名为 link_name的硬链接文件,这个硬链接文件
+						链接着 target文件的
+					
+					
+					软连接相当于是创建了一个快捷方式
+					硬链接是相当于一个备份
+					两者的改变都会改变被链接文件的内容
+					
+					
+					
+		文档的压缩和归档
+			归档文件:将一组文件或目录保存到一个文件中
+			压缩文件:将一组文件或目录压缩成一个文件
+			
+			tar [options] tarfile(压缩文件名)  filelist(要压缩的文件(目录)列表)
+				options:
+					-c create 创建一个归档文件
+					-x extract 释放一个归档文件
+					-v 显示归档或释放过程的信息
+					-f 指定归档文件名
+					-j 由tar生成归档,调用bzip2算法进行压缩
+					-z 由tar生成归档,调用gzip算法进行压缩
+			压缩:
+				tar -jcvf xxx.tar.bz2 filelist  
+					--->利用bzip2算法将 filelist 压缩到 xxx.tar.bz2中
+				
+				tar -zcvf xxx.tar.gz filelist
+					--->利用gzip算法将filelist压缩到 xxx.tar.gz中
+					
+			解压:
+				tar -xvf xxx.tar.bz2(gz) 
+					---->将xxx.tar.bz2(gz)解压到当前目录
+					
+				tar -xvf xxx.tar.bz2(gz) -C dir
+					---->将xxx.tar.bz2(gz)解压到指定的 dir目录中
+					
+			练习:
+				1.请将前面所有(c语言课程)的作业源代码,利用命令做成压缩包
+					yourname_c_code.tar.gz(bz2)
+				2.请将上一题目中的 压缩包解压到 上上个题目中 您创建的那个自己的目录中
+				

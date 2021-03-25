@@ -1,0 +1,232 @@
+
+1. 系统IO	：无缓冲，对文件描述符操作
+	linux系统提供给应用程序操作文件的接口。
+	Everything is a file, In Unix. 	
+	在unix/linux下面，所有东西都是文件。　设计哲学。
+	
+	
+	文件描述符：　file descriptor 　-> 进程文件表项的下标。
+		所有打开的文件都是通过文件描述符来引用，文件描述符在linux下面，唯一表示一个
+		已经打开的文件。后续所有对该文件的操作，　都必须通过文件文件描述符。
+		
+		并且linux会为每个进程，自动打开三个文件:
+			标准输入文件　: STDIN_FILENO (0)
+			标准输出文件　: STDOUT_FILENO (1)
+			标准出错文件　: STDERR_FILENO (2)
+			
+			
+2. linux系统IO的API函数
+	2.1 打开或关闭一个文件
+	NAME
+       open,  - open and possibly create a file or device
+
+	SYNOPSIS
+       #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <fcntl.h>
+			
+			open用来打开或创建一个文件
+       int open(const char *pathname, int flags);
+       int open(const char *pathname, int flags, mode_t mode);
+			pathname: 要打开或创建的文件名(带路径)
+			flags: 打开标志:　标志位　是用用位域来实现(某个标志实际就是某个bit位)
+					O_RDONLY : read only 只读打开
+					O_WRONLY : write only 只写打开
+					O_RDWR   : read and write 读写打开
+					以上三个标记，任选其一
+					O_APPEND: 追加方式
+					O_CREAT: 创建标志(如果文件不存在则创建)
+					O_EXCL: 该标志一般和O_CREAT配合使用，　用来测试文件是否存在的
+							如果指定　O_CREAT | O_EXCL ,如果文件存在，则open会
+							失败，并且　errno == EEXIST
+					O_NONBLOCK: 非阻塞方式打开文件
+							非阻塞: 如果文件没有内容，read直接报错
+									如果文件没有空间啦，write直接报错
+							阻塞: 如果文件没有内容，　read会阻塞(等待直到有数据)
+									如果文件没有空间啦，write会阻塞(等待直到有空间)
+									
+					O_TRUNC: truncate 截短标记
+							假如文件存在，并且是一个普通文件，而且打开方式是O_RDWR or
+							O_WRONLY ,则O_TRUNC会清空文件的内容。
+							
+							O_TRUNC | O_RDONLY -> O_TRUNC不会起作用！！
+							
+			mode: 当创建文件时，需要第三个参数，如果不是创建文件，则第三个参数会被忽略
+					mode 指定新创建的那个文件的权限，有两种方式指定:
+					(1) 宏
+						S_IRUSR(用户可读)   S_IWUSR(用户可写)  S_IXUSR(用户可执行)
+						S_IRGRP(组用户可读)		S_IWGRP S_IXGRP
+						S_IROTH(其它用户可读)	S_IWOTH S_IXOTH
+							例如：指定文件权限为用户可读可写，其他的只可坊
+								S_IRUSR|S_IWUSR | S_IRGRP |S_IROTH
+					(2) 八进制的方式
+						如:
+							0666
+							000 111 RWX 110
+							
+							
+					指定的文件的权限，要和运行这个程序的用户的权限匹配！！（匹配规则由具体的
+					分行版本和文件系统的版本定的）
+			返回值:
+				成功返回打开的那个文件的文件描述符(>=0),该文件描述符用来指定此打开的文件，
+				后续所有对该文件的操作都必须通过它，所以该文件描述符需要保存！
+				
+				失败返回-1, 同时errno被设置。
+				
+				
+		＝＝＝＝＝
+		NAME
+       close - close a file descriptor
+
+		SYNOPSIS
+       #include <unistd.h>
+
+			close用来关闭一个文件描述符
+       int close(int fd); 
+	   
+
+						
+	2.2 读/写文件
+	
+	NAME
+		   read - read from a file descriptor
+
+	SYNOPSIS
+		   #include <unistd.h>
+			
+			read用来从fd指定的文件中，读取count个字节到，buf指定的内存空间中去。
+		   ssize_t read(int fd, void *buf, size_t count);
+					fd: 文件描述符，指定从哪个文件中读取数据
+					buf: 指向一段内存空间，表示数据读到哪里去
+					count: 数量，表示读多少个字节
+				返回值:
+					成功返回实际读到的字节数(>0 && <= count)
+					出错返回-1, 同时errno被设置
+					返回值为0,表示读到文件末尾啦!!
+					
+					
+		==================
+
+	NAME
+       write - write to a file descriptor
+
+	SYNOPSIS
+       #include <unistd.h>
+
+			write用来把buf指向的那段内存空间中前面count个字节的数据，写到
+			fd指定的文件中去。
+       ssize_t write(int fd, const void *buf, size_t count);
+				fd: 文件描述符，表示要写到哪个文件中去
+				buf: 指向一段内存空间，指向要写的数据的首地址
+				count:要写多少个字节
+			返回值　：
+				成功返回实际写入文件的字节数
+				返回0,表示什么也没写
+				失败返回-1,同时errno被设置。
+
+		练习：
+			1. 利用系统io来实现两个文件之间的拷贝，文件名由命令行参数指定
+				./main 1.txt 2.txt
+				
+					
+				
+				
+				
+		实际当中，我们在读写文件前，必须要把光标定位，定位文件偏移量。！！！！
+	
+	2.3 定位一个文件
+	
+	NAME
+       lseek - reposition read/write file offset
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <unistd.h>
+				lseek用来给fd指定的文件定位光标的。
+       off_t lseek(int fd, off_t offset, int whence);
+				fd: 文件描述符，要定位的文件;
+				offset: 偏移量，具体含义需要结合第三个参数
+				whence: 定位方式，有如下三种:
+					SEEK_SET: 基于文件开头定位
+							新光标位置=文件开头+offset(>=0)
+					SEEK_CUR:基于当前光标位置定位
+							新光标位置=当前光标位置+offset(可正可负)
+					SEEK_END:基于文件末尾定位
+							新光标位置=文件末尾+offset(可正可负)
+				返回值:
+					成功返回新光标位置相对于文件开头的偏移量(以字节为单位)
+					失败返回-1, 同时errno被设置
+					
+			例子:
+				可以利用lseek来求一个文件的大小
+				long size = lseek(fd, 0, SEEK_END);
+
+		读写一个文件的时候，实际是把文件的内容拷贝到内存，或者是把内存的
+		内容拷贝到硬盘。有人说，能不能把文件的内容直接映射到用户的地址空间，
+		然后操作这个文件，就直接去操作这个地址空间的指针??
+		
+		实现像操作普通内存一样去读写文件，
+	2.4 mmap/munmap
+	
+	
+	NAME
+       mmap, munmap - map or unmap files or devices into memory
+
+SYNOPSIS
+       #include <sys/mman.h>
+
+			mmap实现把一个文件的内容映射到一个进程的地址空间中去。
+       void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+				addr: 指针，映射地址，表示您要把这个文件的内容映射到您	
+					进程的哪个地址上去。有人说，我怎么知道是哪个地址呢？
+					对，一般人不知道。所以这个参数一般为NULL,表示让操作系统
+					给我自行分配一个地址。
+				length: 要映射的文件内容的长度。
+						向上取PAGE_SIZE(4096)的整数倍。在内核中，内存是以页PAGE
+						为单位的。
+				prot:映射的内在区域的权限(应与打开文件时的权限一致，因为操作此区域内存
+					实际上就是操作文件的内容)
+						PROT_EXEC: 可执行
+						PROT_READ: 可读的
+						PROT_WRITE:可写的
+						PROT_NONE:没有访问权限　
+						
+				flags: 映射标志。决定对映射部分的操作是否对其他进程可见。
+					MAP_SHARED: 共享映射，对其他进程可见，内存操作直接应用到文件中去。
+							SHARED　在映射时，直接操作的文件！！！
+					MAP_PRIVATE: 私有映射，对其他进程不可见，内存操作不应用到文件中去。
+							PRIVATE 在映射时，会单独给这个文件这个进程开辟一个私有的空间。
+				
+				 fd: 文件描述符，表示您要映射哪个文件.
+
+				offset:偏移量，表示要从文件的哪个位置开始映射。
+						offset必须为PAGE_SIZE(4k)整数倍。
+							内核不仅是是以页为单位，而且内存地址必须是页对齐(必须是4k的整数倍)
+							
+				返回值:
+					成功返回映射后那段内存空间的首地址
+					失败返回MAP_FAILED,同时errno被设置。
+				 
+			mmap并不能改变文件的大小!!!
+				  
+			munmap解映射，
+       int munmap(void *addr, size_t length);
+			addr:要解映射的地址，mmap的返回的地址
+			length:要解映射的内存空间的长度。
+			
+				进程退出会自动munmap,
+				但是关闭文件，不会自动munmap
+
+	
+	
+	
+		作业：
+		１.　写一个程序，解析一个bmp的文件，打印出给定的bmp文件的信息：
+				是不是一个bmp的文件　？
+				如果是一个bmp的文件:
+					这个bmp文件的分辨率是多少　
+					这个bmp文件的大小是多少字节
+					这个bmp文件每个像素点占多少个字节
+					
+			bmp文件名通过命令行参数指定
+	

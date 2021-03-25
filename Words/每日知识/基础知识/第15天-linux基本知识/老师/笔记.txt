@@ -1,0 +1,284 @@
+0.安装并配置一个Linux系统 (利用虚拟机/实体机)
+	ubuntu 红帽  .....
+	vmware 虚拟机
+	ubuntu系统的安装
+	vmware tools 
+		------->共享工具,用来实现虚拟机文件系统和实体机文件系统的共享
+		安装步骤:
+			虚拟机 ----> 更新(下载)vmwar tools
+				---->在系统弹出的文件夹中找到压缩包(vmwaretools-版本号-.tar.gz)
+				---->复制上述文件到 主文件夹
+				---->右键 提取到此处
+				---->进入 vmware-tools-distrib 文件,打开终端
+				---->执行命令  sudo ./vmware-install.pl
+					当终端弹出的信息中有 [] 时,敲 回车键 
+					等到再一次出现命令行,则表示执行完成
+				---->关机(ubuntu) 重启 vmware
+	共享文件夹的设置
+			虚拟机--->设置----->选项---->文件夹共享
+	ip的配置
+			虚拟机---->设置---->硬件---->网络适配器
+					----->桥接模式/复制物理网络链接状态
+			ifconfig命令用来查看相关的网络信息
+			ping ip/网址 用来验证系统联网状态
+			ping www.baidu.com
+			
+			
+1.APT(Advanced Packaging Tool)
+	Ubuntu中最强大命令行软件包管理工具
+	用来获取、安装、编译、卸载和查询软件包，以及检测软件包的型号关系
+	-------》有点像 ”360软件管家“
+	password : 密码 (passwd)
+	工作原理：
+	/etc/apt/sources.list 用该文件保存了所有软件目录(服务器地址)
+	
+	服务器速率是不同的,在中国 163的服务器比较不错
+	因此我们需要 "换源"
+	1.1换源
+		过程:
+			cd /etc/apt   ------>切换终端工作路径到 /etc/apt
+			sudo cp sources.list.163 sources.list  
+					----->使用 "163的源" 替换掉原本的 "源"
+			
+		(没有sources.list.163的同学从我共享中下载,然后复制粘贴到
+			/etc/apt文件夹中,然后再执行上述命令)
+			
+	1.2从新"源"中下载软件列表
+		sudo apt-get update  ---->从源中更新软件列表
+		
+	1.3下载程序
+		sudo apt-get install *********(软件包的名称)
+		含义:安装 ******** 软件
+		
+		sudo apt-get remove *****
+		含义:卸载 ***** 软件
+		
+		sudo apt-get clean
+		含义:清除所有安装包
+		
+		sudo apt-cache search ****
+		含义:以后面 **** 表达式查找软件包
+		例如:查找pinyin输入法
+			sudo apt-cache search pinyin
+			
+	练习:安装google输入法
+		sudo apt-get install fcitx libssh2-1
+		sudo apt-get install fcitx-googlepinyin
+		
+		系统设置--->语言支持---->键盘输入方式系统选成 fcitx 
+			------->应用到整个系统 --->重启
+		
+2.获取帮组命令  man
+	man:manual  手册
+	linux系统是是一个面向开发者的系统
+	linux自带很多的开发手册,而且给不同的内容分类管理
+		1
+		2
+		3
+		4
+		.....
+	如果您在 Linux中有个命令/函数不会使用,那么可以用 man来获取帮助
+	
+	格式:
+		man 手册分页(1 2 3 4) 名字(要查找的名称)
+		
+		比如:man 2 open
+			man: 命令
+			2: 第2分页
+			open:表示要查找的手册名
+		进入手册页面后 用 q 退出	
+	命令:
+		man -f 名称
+		含义:查看 "名称" 所对应的所有手册页 索引
+		
+		比如: man -f open 
+		
+3.sudo:super do 以超级管理员的权限运行命令
+	在命令前加上 sudo 修饰,表示该条命令是有 root(超级用户) 执行的
+	比如:
+		sudo apt-get install fcitx
+		以 root的权限 来安装 fcitx
+		
+4.vim的使用
+	sudo apt-get install vim   ------>安装vim
+	
+	vi/vim是linux中最基本的 最常用的 功能最强大的命令行文本编辑器
+	vim -----> 文本编辑器  notepad是一样的
+	
+	vi/vim拥有两种操作模式
+	
+	命令模式:在命令模式下,任意键盘输入都会被当成是命令
+		vim的功能之所以强大,就在于vim支持非常多大命令
+		
+	输入模式:在输入模式下,任意键盘输入,都被识别为文本内容
+	
+	vi/vim在启动时都是处于命令模式
+	格式:
+		vi/vim 文本名 (可存在可不存在)
+	
+	输入模式 ---> 命令模式
+		Esc(键)
+		
+	命令模式 ----> 输入模式
+		i:insert  进入输入模式后,光标在当前字符的位置(光标位置不变)
+		I:Insert  进入输入模式后,光标自动跳转到行首
+		
+		a:append  追尾,进入输入模式后,光标在当前字符的后面(光标后移一位)
+		A:Append  追尾,进入输入模式后,光标在行尾
+		
+		o:open 开路,进入输入模式后,在光标当前行后添加一新行,并且光标到新行行首
+		O:Open 开路,进入输入模式后,在光标当前行前添加一新行,并且光标到新行行首
+	
+	
+	vim的配置文件
+		将共享文件夹中的 .vimrc 拷贝到 ubuntu的 主文件夹中
+			在 .vimrc 所在的目录打开终端执行以下命令
+				cp .vimrc ~
+			右键 复制 ,然后在ubuntu的主文件夹中右键 粘贴
+		vim ~/.vimrc
+			
+		练习:
+			使用vim编辑器,将 .vimrc 的第72~89行中的
+				作者和邮箱更改为自己的名字和邮箱地址
+			
+	必须在命令模式下进行
+		vim的退出命令:
+			:q   quit 不保存退出,如果文件被更改过,会提示是否保存
+			:q!  quit! 强制不保存退出,不会有任何提示
+			:w   write 写入,将文件的内容写入到被打开的文件(保存)
+			:w filename 将文件的内容写入 filename 文件中(另存为)
+			:wq  write quit  保存并退出
+			:x  <=> :wq
+			ZZ  <=> :wq
+		
+		vim 撤销操作
+			u undo 撤销
+			
+		vim删除与修改命令
+			x 	删除光标所在的字符
+			dd	delete删除光标所在的行
+			ndd 删除光标开始及后续的n行（剪切操作）
+				比如 4dd 删除光标所在位置和后续总共4行
+
+			r   replace 替换光标所在的单个字符
+				r新字符
+
+			R   Replace 替换光标及光标后的一串字符，直到按esc退出替换
+			    R新字符串esc结束
+
+		vim拷贝和粘贴命令
+			p（小p）   paste/print  将剪贴板的内容粘贴到当前行的后续
+			P(大p) 将剪贴板的内容粘贴到当前行前面
+			yy  yield复制，将光标所在的行复制到剪贴板
+				nyy 将光标所在的行及后续总共n行复制到剪贴板
+	
+		vim搜索命令
+			/要搜索的内容
+				比如 /open
+					表示在当前文件中搜索 open 字符串
+					回车后会标记所有的open
+					用 n 可以跳转到下一个
+					用 N 可以跳转到上一个
+
+		关于vim的一些话
+			vim是一个功能很强大的编辑器，上面讲的只是一些皮毛
+			vim之所以强大在于vim支持非常多的命令
+			vim的配置文件，个人根据自己的喜好去配置
+			
+	练习:
+		利用vim编写一个.c程序,实现1-100求和
+		
+		
+		
+5.Linux系统的维护命令
+	关机 shutdown
+		sudo shutdown -h now
+		立即关机
+		
+	重启 reboot
+		sudo reboot
+		
+	清屏 clear
+		将终端前面的内容清除
+		
+	命令提示: Linux的命令行具有"自动补全"  Tab
+		De+Tab 会列举出所有以De开头的东东,如果只有一个,会自动补全
+		
+	历史命令:
+		linux终端会将所有输入过的命令记录在历史中,用 ↑ 可以查找历史命令
+		
+	切换用户:
+		linux支持多用户同时操作
+		su username
+		比如 su root  切换到超级用户
+			使用su切换用户需要输入用户的密码
+			sudo -s 同样可以切换到root
+			
+	修改用户密码  passwd
+	
+	退出当前用户 exit
+		
+		练习:切换到root用户,求改root用户密码
+		
+		
+6.用户管理
+	/etc/passwd 这个文件中保存了系统所有用户的信息
+	文件中每一行代表一个用户,一行中数据的含义如下(:是分割符)
+	root:x:0:0:root:/root:/bin/bash
+	用户名:口令(密码):用户ID(UID):组ID(GID):用户主目录:用户shell(命令)
+	
+	UID:系统为每一个用户分配的一个标识数,用来标识一个用户
+	GID:为了方便管理所有的用户,Linux采用分组的形式进行管理
+		每个组都有一个ID号,被称为GID,
+		GID相同的用户,表示是同组的
+	用户主目录:Linux给每个用户分配了一个主目录(家目录)
+		家目录的路径在 /home/用户名
+			比如 gec用户的家目录
+				/home/gec  -----> ~
+		用户对于自己的主目录(包括子目录)是拥有绝对权限的,
+			但是除主目录外的其它目录,只有root才有权限
+	
+		建议:每个登陆用户最好在自己的家目录下进行操作
+			启动终端默认就是家目录
+	用户shell:指定解析命令的程序是哪一个
+		shell 壳
+		shell是Linux用来保护内核的一层"壳"
+		shell本身是一个命令解析器,也是一个程序
+			这个程序有很多不同的人在写
+			也就是说有很多不同的shell
+		用户与操作系统核心之间的桥梁就是这个 shell
+		
+		命令执行过程
+			用户输入命令
+			----> shell(进行命令解析)
+			----> OS(操作系统)
+			 shell<-----
+			 用户(终端)<------
+			
+	/etc/group 保存了所有用户组的信息		
+		文件中每一行代表一个用户组
+		组名:口令:GID(组长的UID)/成员列表
+	
+	用户相关管理命令
+		adduser  username   表示添加 username 用户
+			比如: adduser oyhl
+		
+		userdel username    表示删除 username 用户
+			比如: userdel oyhl
+			
+		addgroup groupname 表示创建 groupname 组
+			比如: addgroup ouyang
+			
+		groupdel groupname 表示删除 groupname 组
+			比如: groupdel ouyang
+			
+	练习:请在ubuntu为您的女朋友(男朋友)(将来的)
+			创建一个用户
+			
+	
+	
+7.进程管理
+		
+		
+		
+		

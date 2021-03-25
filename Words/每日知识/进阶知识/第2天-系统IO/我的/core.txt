@@ -1,0 +1,7 @@
+cs180301 xuyu 59
+cs180302 liuda 66
+cs180303 zhaoer 77
+cs180304 zhangsan 88
+cs180305 lisi 99
+cs180306 wangwu 98
+

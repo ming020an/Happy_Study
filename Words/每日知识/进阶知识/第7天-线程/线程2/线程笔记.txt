@@ -1,0 +1,457 @@
+
+一、　问题的引入
+	前面讲到，为了并发执行任务(程序)，现代操作系统特地引入“进程”的概念
+		
+	分析：
+		1. 进程的地址空间是独立的，
+		　　=> 创建一个进程的系统开销比较大，因为要拷贝父进程的整个地址空间。
+		
+		2. 进程的地址空间是独立的，分开的，如果进程间需要进行数据交换，则
+		需要用到进程间通信(PIPE/FIFO/信号/消息队列/共享内存、信号量……。)，　进程通信代价比较大。
+		
+		
+		于是，就有人提出能不能在同一个进程地址空间内实现“任务(程序)”的并发执行呢？
+		就像下面的那个图一样：
+		
+			
+二、线程的概念
+	1. 线程是比进程更小的活动单位，是进程的一个执行流，是CPU调度和分派的基本单位。
+	2. 线程同进程内其他线程共享进程的地址空间！！！！	
+	线程的特点：
+	(1) 创建一个线程比创建一个进程开销要小得多。　
+	（理解一下）
+		在Linux系统下，启动一个新的进程必须分配给它独立的地址空间，建立众多的数据表来维护它的代码段、堆栈段和数据段，
+		这是一种"昂贵"的多任务工作方式。
+		而运行于一个进程中的多个线程，它们彼此之间使用相同的地址空间，共享大部分数据，
+		启动一个线程所花费的空间远远小于启动一个进程所花费的空间，
+		而且，线程间彼此切换所需的时间也远远小于进程间切换所需要的时间。
+	(2) 实现线程间通信十分方便，因为一个进程创建的多个线程直接共享
+		进程的内存区域；
+		同一进程下的线程之间共享数据空间，所以一个线程的数据可以直接为其它线程所用，这不仅快捷，而且方便。
+		也有潜在的问题哟？
+		（理解一下）
+	(3) 线程是一个动态的概念。
+			进程内部的一个执行分支，　线程是用来在进程内部并发执行指令的。
+			C语言中指令必须在函数内部　　=> 线程　对应一个　函数(线程函数)
+			线程的主要工作就是去执行那个线程函数，如果线程函数执行完了，
+			线程也就是完了。						
+	(4) 在进程内创建多线程，可以提高系统的并行处理能力，加快进程的处理速度，
+	系统是按线程来进行调度的。
+	
+	(5) 进程默认会有一个主线程(main函数)，　在进程的运行过程中，可以创建其他的
+		线程。
+		
+	进程，线程。
+		在操作系统内部，进程是分配系统资源(CPU时间、内存等)的最小单位，调度执行的最小单位是线程。
+		
+	如何查看线程
+	在ps命令中，“-T”选项可以开启线程查看。下面的命令列出了由进程号为<pid>的进程创建的所有线程。
+	top命令可以实时显示各个线程情况。要在top输出中开启线程查看，请调用top命令的“-H”选项，该选项会列出所有Linux线程。
+		
+	
+		
+三、linux下面pthread的接口函数
+	
+	pthread: POSIX实现了一套线程的机制　POSIX thread, -> pthread
+	
+	1. 创建一个线程　　pthread_create
+		创建一个线程，要指定什么东西：
+			　线程要执行哪些指令 -> 要执行哪个函数　-> 线程函数
+			　线程属性						
+			在　pthread中　用类型pthread_t 来表示一个线程的id, 
+				pthread_attr_t 来表示一个线程的属性(分享状态/线程优先级,...)
+			
+			NAME
+			   pthread_create - create a new thread
+
+		SYNOPSIS
+			   #include <pthread.h>
+
+			   int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+								  void *(*start_routine) (void *), void *arg);
+								  
+						thead: pthread_t的指针，用来保存新创建的线程的id的
+						attr: pthread_attr_t的指针，用来指定新创建的线程的属性的，
+							如线程优先级、初始栈大小、是否为守护进程等。
+								此处可以为NULL,表示采用默认属性。
+						start_routine: 函数指针，它指向的函数就是新创建的线程要去执行的
+									函数(线程函数)，线程函数的类型应该为：
+										带一个void*的参数，返回一个void*的类型
+												void *xxxx(void *data)
+												{
+												}
+
+						arg: 你的那个线程函数不是要带一个参数吗，
+							此处arg指定就是你线程执行时的，实际参数。如果想传递多个参数，请将它们封装在一个结构体中。
+							
+							
+					返回值:
+						成功返回0,
+						失败返回-1, 同时errno被设置。
+						
+			   Compile and link with -pthread.
+			   
+			   
+			   ======
+			   NAME
+			   pthread_self - obtain ID of the calling thread
+
+		SYNOPSIS
+			   #include <pthread.h>
+
+							pthread_self用来获取调用线程的id -> 获取自己的id
+			   pthread_t pthread_self(void);
+				用于返回当前线程的ID。
+	２.　线程退出
+		有三种方式可以使线程结束：
+		(1) 线程函数返回
+		(2) 调用pthread_exit();
+		(3) It is cancelled (被别人取消掉，　别的线程调用　pthread_cancel)		
+				pthread_exit: 结束调用线程。
+				NAME
+			   pthread_exit - terminate calling thread
+
+				SYNOPSIS
+			   #include <pthread.h>						
+			   void pthread_exit(void *retval);
+						retval:线程退出的返回值
+			说明：pthread_exit()用于线程退出，可以指定返回值，以便其他线程通过pthread_join（）函数获取该线程的返回值。
+			return是函数返回，只有线程函数return，线程才会退出。 
+			exit是进程退出，如果在线程函数中调用exit，进程中的所有函数都会退出！
+
+			   Compile and link with -pthread.
+			   =====================
+	   
+					pthread_cancel是用来“取消”(干掉)那个tid指定的那个线程。
+			int  pthread_cancel(pthread_t tid);
+				pthread_cancel发送一个“取消”请求给tid指定的线程。
+				但是，接受到这个“取消”请求的线程是否会结束，取决于线程的一个
+				属性: cancel state.(是否可被cancel)
+				
+				我们可以调用　pthread_setcancelstate来enable/disable这个属性。
+						　enable -> 你可以被别人cancel
+						  disable -> 别人调用pthread_cancel，干不掉你						  
+					
+						pthread_setcancelstate用来设置调用线程的“可取消”属性
+				int pthread_setcancelstate(int state, int *oldstate);
+						state:
+							 PTHREAD_CANCEL_ENABLE /
+							 PTHREAD_CANCEL_DISABLE
+
+						oldstate:	
+							用来保存先前的状态值	
+		现在我们来演练一下：main函数依次输出0-9，创建的孩子线程依次输出0-9。
+		pthread.c
+									
+		课堂作业：thread_bs0.c	
+	1）有一int型全局变量g_Flag初始值为0；
+	2）在主线程中起动线程1，打印“this is thread1”，并将g_Flag设置为1
+	3）在主线称中启动线程2，打印“this is thread2”，并将g_Flag设置为2
+	测试结果，理解一下，在main退出前加入sleep(2),结果会如何？解释一下。
+
+			
+	3.  pthread_join 用来等待一个线程退出		
+		
+		NAME
+		   pthread_join - join with a terminated thread
+
+		SYNOPSIS
+		   #include <pthread.h>
+
+				pthread_join用来等待thread指定的那个线程退出的
+		   int pthread_join(pthread_t thread, void **retval);
+						thread: 线程id,表示您要等哪个线程退出
+						retval: 两级指针，
+								用来保存线程的退出的返回值的。
+						
+				返回值:
+					成功返回0
+					失败返回-1, 同时errno被设置。
+						
+				该函数调用会阻塞调用线程，直到被等待的线程退出或调用出错。	
+				pthread_join有两个作用：
+					(1) 等待线程退出
+					(2) 回收被等待线程的资源。
+						线程退出了，不代表其资源释放，这个取决于线程的一个属性
+						detach state(分离状态)						
+						PTHREAD_CREATE_DETACHED -> detached state 分离状态 由我“自生自灭”吧
+										分离状态，属于此状态的线程，在其退出后，
+										其资源会自动释放。
+										如果一个线程为分离状态，其他线程调用pthread_join仅
+										用来等待它退出！！
+						PTHREAD_CREATE_JOINABLE -> joinable state 非分离状态，　需要有人等待我退出，帮我回收资源
+									非分离状态，属于此状态的线程，在其退出后，其资源不会自动
+									释放，需要其他的线程调用pthread_join回收其资源。
+									
+					我们可以调用pthread提供的以下API函数来设置线程的detach state:
+						int pthread_detach(pthread_t thread); //pthread_detach用来设置thread指定的线程为detached state
+						新创建的线程默认为　joinable state.
+							
+				void *p;
+				pthread_join(tid, &p);
+			课堂练习：
+			要求4） 线程1需要在线程2退出后才能退出
+			在void* thread1(void* arg)中线程1退出前加入pthread_join(*(pthread_t*)arg, NULL);
+				
+	4. 线程间的同步机制
+		线程之间经常需要访问一些共享资源，为了对共享资源的有序访问，
+		防止竞争，我们需要对共享资源的访问进行某种方式加以保护。
+		=>信号量机制		
+		(1) 信号量机制
+			system v semaphore
+			POSIX semaphore
+					POSIX有名信号量
+					POSIX无名信号量
+		(2) 线程互斥锁   sudo apt-get install manpages-posix-dev
+			线程互斥锁存在于进程地址空间的一种保护设施，
+			使用互斥锁（互斥）可以使线程按顺序执行。
+			通常，互斥锁通过确保一次只有一个线程执行代码的临界段来同步多个线程。
+				P/V操作
+				互斥实例：线程分为三步1：取变量值num 2：num+1 3：num回写；num初值为5
+				现在有线程A,B，执行顺序为A1-B1-A2-A3-B2-B3 显然num加了2次，结果却是6				
+				
+			在POSIX thread用类型pthread_mutex_t表示一个线程互斥锁(相当于
+			我们原来学过的信号量，只不过它存在于进程内部)，线程互斥锁只能
+			用于进程内部的不同线程之间互斥。
+			
+				pthread_mutex_init : 初始化一个线程互斥锁								
+								pthread_mutex_init用来给mutex指定的线程互斥锁初始化
+						 int pthread_mutex_init(pthread_mutex_t *restrict mutex,
+												const pthread_mutexattr_t *restrict attr);
+									mutex: 要初始化的线程互斥锁
+								　　attr: 线程互斥锁的属性，一般填NULL,表示采用默认属性
+								返回值:
+									成功返回0
+									失败返回-1, 同时errno被设置。
+												
+												
+				pthread_mutex_destroy:销毁一个线程互斥锁
+								pthread_mutex_destroy用来销毁mutex指定的线程互斥锁
+							int pthread_mutex_destroy(pthread_mutex_t *mutex);
+				
+				P操作： 要防止它"带锁退出"，代码不能出问题啦!!!
+				
+					pthread_mutex_lock  给线程互斥锁　加锁
+					pthread_mutex_trylock 　加锁　不阻塞版本
+					
+					
+							pthread_mutex_lock阻塞版本，获取了锁返回0,
+							否则等待直到能够获取该互斥锁或出错(返回-1)
+						 int pthread_mutex_lock(pthread_mutex_t *mutex);
+						 
+							pthread_mutex_trylock非阻塞版本，能获取则立即
+							获取(返回0)，不能获取则立即返回-1
+						int pthread_mutex_trylock(pthread_mutex_t *mutex);
+					
+				V操作:
+					pthread_mutex_unlock 给线程互斥锁解锁
+				
+							pthread_mutex_unlock用来给线程互斥锁解锁
+						int pthread_mutex_unlock(pthread_mutex_t *mutex);
+      
+			
+		
+		生产者－消费者模型：
+			生产者负责　产生　数据
+			消费者负责　消耗　数据
+		问题描述
+		一组生产者进程和一组消费者进程共享一个初始为空、大小为n的缓冲区，
+		只有缓冲区没满时，生产者才能把消息放入到缓冲区，否则必须等待；
+		只有缓冲区不空时，消费者才能从中取出消息，否则必须等待。
+		由于缓冲区是临界资源，它只允许一个生产者放入消息，或者一个消费者从中取出消息。 
+		问题分析
+		
+		１.　缓冲区是一个共享资源，“互斥问题”
+				信号量/线程互斥锁			
+			
+		２. 当缓冲区中没有数据时，消费者线程该怎么办？  同步问题
+			(1) 不停地去测试，看是否有数据来了 -> 轮询
+				　浪费CPU
+				
+			(2) 让出CPU(休眠)，当数据产生时，再唤醒，再通知我！！！！！
+				＝〉需要用到线程条件变量！！！
+		3.信号量设置：信号量mutex作为互斥信号量，它用于控制互斥访问缓冲池，互斥信号量初值为1；
+		信号量full用于记录当前缓冲池中“满”缓冲区数，初值为0。
+		信号量empty 用于记录当前缓冲池中“空”缓冲区数，初值为n。
+		需要解决的是互斥和同步PV操作的位置。
+		
+		伪代码描述如下：
+		semaphore mutex=1; //临界区互斥信号量
+		semaphore empty=n;  //空闲缓冲区
+		semaphore full=0;  //缓冲区初始化为空
+		producer () { //生产者进程
+			while(1){
+				produce an item in nextp;  //生产数据
+				P(empty);  //获取空缓冲区单元
+				P(mutex);  //进入临界区.
+				add nextp to buffer;  //将数据放入缓冲区
+				V(mutex);  //离开临界区,释放互斥信号量
+				V(full);  //满缓冲区数加1
+			}
+		}
+
+		consumer () {  //消费者进程
+			while(1){
+				P(full);  //获取满缓冲区单元
+				P(mutex);  // 进入临界区
+				remove an item from buffer;  //从缓冲区中取出数据
+				V (mutex);  //离开临界区，释放互斥信号量
+				V (empty) ;  //空缓冲区数加1
+				consume the item;  //消费数据
+			}
+}
+		
+	５.　线程条件变量　
+		线程条件变量是用来实现多线程间同步的一种机制。
+		在多线程程序设计中，我们用条件变量来表示某一特定的“条件”。
+		在一个条件变量上的操作:
+				初始化/销毁一个条件变量
+				等待一个条件变量-> 等待条件产生
+				唤醒一个条件变量 -> 条件产生啦，唤醒等待条件变量的线程
+				
+				
+				
+			线程１									线程２
+			
+			if (条件不满足)								……
+			{
+				wait(条件变量)							产生条件
+			}											wake up(条件变量)
+			
+			....
+				
+		pthread中条件变量的类型为　　pthread_cond_t ->表示条件变量的类型
+			如果你在代码需要一个变量来表示你的一个选定的“条件”
+				你可以声明一个　pthread_cond_t的变量
+				
+		条件变量的操作函数:
+		5.1 初始化/销毁一个条件变量
+			pthread_cond_init
+			pthread_cond_destroy
+			
+			NAME
+       pthread_cond_destroy, pthread_cond_init - destroy and initialize condition variables
+
+		SYNOPSIS
+			   #include <pthread.h>
+
+			
+			   
+			      pthread_cond_init用来初始化cond指定的条件变量
+			   int pthread_cond_init(pthread_cond_t * cond,
+					  const pthread_condattr_t * attr);
+					  cond: pthread_cond_t的指针，用来表示要初始化的那个条件变量
+					  attr: 表示条件变量的属性，此处一般填NULL,表示
+							采用默认属性
+					返回值:
+						成功返回0
+						失败返回-1, 同时errno被设置
+			   
+			   
+					pthread_cond_destroy用来销毁cond指定的条件变量。
+			   int pthread_cond_destroy(pthread_cond_t *cond);
+					
+			
+		5.2 等待一个条件变量
+			
+		NAME
+       pthread_cond_timedwait, pthread_cond_wait - wait on a condition
+
+		SYNOPSIS
+       #include <pthread.h>
+			pthread_cond_wait用来等待cond表示的“条件”.
+			因为条件变量本身是一个“共享资源”，为了避免竞争，
+			需要一个线程互斥锁来保住它。　MC -> Mutex  Condition
+			在调用pthread_cond_wait前，必须先把mutex锁住。　＝〉"带锁退出" ?? 不会的
+			pthread_cond_wait/pthread_cond_timedwait 需要把锁住的互斥锁传入，
+			上述等待函数，在其内部实现时，在让线程休眠(让出CPU)前，会释放该
+			互斥锁，然后休眠，直到被唤醒时，被唤醒时，再次锁住该互斥锁，并
+			从等待函数返回。			
+		
+	   int pthread_cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex);
+	   
+	   
+			pthread_cond_timedwait是“限时等待”
+       int pthread_cond_timedwait(pthread_cond_t *restrict cond, pthread_mutex_t *restrict mutex,
+              const struct timespec *restrict abstime);      
+	   
+				struct timespec
+				{
+					time_t tv_sec; //秒
+					long   tv_nsec;//纳秒
+				};
+				
+			返回值:
+				成功返回0
+				失败返回-1,同时errno被设置。
+	
+			例子:
+				struct timespec ts;
+				clock_gettime(CLOCK_REALTIME, &ts); //获取当前的实时时间
+				ts.tv_sec += 5;		
+				pthread_cond_timedwait(cond, mutex, &ts);
+			
+		5.3  唤醒条件变量上的等待线程
+							NAME
+				   pthread_cond_broadcast, pthread_cond_signal - broadcast or signal a condition
+
+			SYNOPSIS
+				   #include <pthread.h>				   
+						pthread_cond_signal用来唤醒cond指定的条件变量上的一个等待线程
+					int pthread_cond_signal(pthread_cond_t *cond);					
+						pthread_cond_broadcast用来唤醒cond指定的条件变量上的所有线程。
+				   int pthread_cond_broadcast(pthread_cond_t *cond);
+				 
+	课堂练习：
+	要求5）主线程在检测到g_Flag从1变为2，或者从2变为1的时候退出。
+	线程同步技术，线程同步需要条件变量。
+	4处变更
+	（1）初始化：
+	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+	（2）主程序中：
+	pthread_cond_wait(&cond, &mutex);	
+	（3）线程1中
+	pthread_mutex_lock(&mutex);
+	if(g_Flag == 2)
+		pthread_cond_signal(&cond);
+	g_Flag = 1;
+	printf("this is thread1, g_Flag: %d, thread id is %u\n",g_Flag, (unsigned int)pthread_self());
+	pthread_mutex_unlock(&mutex);
+	（4）线程2中
+	pthread_mutex_lock(&mutex);
+	if(g_Flag == 1)
+		pthread_cond_signal(&cond);
+	g_Flag = 2;
+	printf("this is thread2, g_Flag: %d, thread id is %u\n",g_Flag, (unsigned int)pthread_self());
+	pthread_mutex_unlock(&mutex);
+	
+	
+	课后作业：
+		１.　用线程的方式实现一个目录(只考虑目录和普通文件的情况)的拷贝（参考代码：pthread_cp.c）
+		pthread_cp 源目录 目的目录
+		参考运行结果如下：
+		gec@ubuntu:/mnt/hgfs/share/thread$ ./pthread_cp ./ /home/gec
+		线程3复制./pthread.c到/home/gec/前缀_pthread.c成功！
+		线程2复制./pthread_cp到/home/gec/前缀_pthread_cp成功！
+		线程1复制./pthread_cp.c到/home/gec/前缀_pthread_cp.c成功！
+		线程3复制./thread_bs到/home/gec/前缀_thread_bs成功！
+		线程2复制./thread_bs.c到/home/gec/前缀_thread_bs.c成功！
+		线程1复制./thread_bs0到/home/gec/前缀_thread_bs0成功！
+		线程3复制./thread_bs0.c到/home/gec/前缀_thread_bs0.c成功！
+	
+	
+	
+	
+	
+				
+				
+				
+				
+				
+		
+		
+		
+		
+	
+	
